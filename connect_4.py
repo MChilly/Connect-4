@@ -25,6 +25,7 @@ class Game:
     def __init__(self, root):
         self.root = root
         self.root.title("Connect 4")
+        self.root.geometry("800x800+520+20")  # Window dimensions 800x800. Position: +520pixels right + 20 pixels down
         self.root.iconbitmap(r"images\game_dice.ico")
         self.root.configure(bg='black')  # Setting a black background
         self.current_player_index = 0
@@ -33,47 +34,53 @@ class Game:
             Player("παίκτης 2", "green", "2")
         ]
 
+    def create_menu(self):
+        # Game main menu
+        menu = tk.Menu(root)
+        self.root.config(menu=menu)
 
-# Display help information in a new window
-def display_help():
-    extra_window = tk.Toplevel()
-    extra_window.title("Οδηγίες παιχνιδιού")
-    extra_window.geometry('500x500')
-    tk.Label(extra_window, text="Παιχνίδι για δύο παίκτες. Ο κάθε παίκτης προσπαθεί να σχηματίσει όσο περισσότερες τετράδες οριζόντια, κάθετα ή διαγώνια,\n"
-                                " προσπαθώντας ταυτόχρονα να εμποδίσει τον αντίπαλο να κάνει το ίδιο. ").pack()
+        # File menu
+        filemenu = tk.Menu(menu)
+        menu.add_cascade(label='Αρχείο', menu=filemenu)
+        filemenu.add_command(label="Νέο παιχνίδι", command="test")
+        filemenu.add_command(label="Αποθήκευση ως", command="test")
+        filemenu.add_command(label="Άνοιγμα αρχείου", command="test")
+        filemenu.add_separator()  # Εμφάνιση διαχωριστικής γραμμής
+        filemenu.add_command(label="Έξοδος", command=self.root.destroy)
 
+        # Help menu
+        helpmenu = tk.Menu(menu)
+        menu.add_cascade(label="Βοήθεια", menu=helpmenu)
+        helpmenu.add_cascade(label="Οδηγίες παιχνιδιού", command=self.display_help)
+        helpmenu.add_cascade(label="Πληροφορίες", command=self.display_about)
 
-# Display about information in a new window
-def display_about():
-    about_window = tk.Toplevel(root)
-    about_window.title("About")
-    about_text = "Πληροφορίες για το παιχνίδι ή τον προγραμματιστή."
-    about_label = tk.Label(about_window, text=about_text)
-    about_label.pack()
+    # Display help information in a new window
+    def display_help(self):
+        """Opens a new window to show game rules or help, related to how to play the game."""
+        extra_window = tk.Toplevel()
+        extra_window.title("Οδηγίες παιχνιδιού")
+        extra_window.geometry('500x500')
+        tk.Label(extra_window,
+                 text="Παιχνίδι για δύο παίκτες. Ο κάθε παίκτης προσπαθεί να σχηματίσει όσο περισσότερες τετράδες οριζόντια, κάθετα ή διαγώνια,\n"
+                      " προσπαθώντας ταυτόχρονα να εμποδίσει τον αντίπαλο να κάνει το ίδιο. ").pack()
+
+    # Display about information in a new window
+    def display_about(self):
+        """Opens a new window providing information about the game or the developers"""
+        about_window = tk.Toplevel(root)
+        about_window.title("About")
+        about_text = "Πληροφορίες για το παιχνίδι ή τον προγραμματιστή."
+        about_label = tk.Label(about_window, text=about_text)
+        about_label.pack()
+
 
 
 #  main program
 if __name__ == "__main__":
     root = tk.Tk()
-    # Window dimensions 800x800. Position: +520pixels right + 20 pixels down.
-    root.geometry("800x800+520+20")
-
-    # Game main menu
-    menu = tk.Menu(root)
-    root.config(menu=menu)
-    filemenu = tk.Menu(menu)
-    menu.add_cascade(label='Αρχείο', menu=filemenu)
-    filemenu.add_command(label="Αποθήκευση ως", command="test")
-    filemenu.add_command(label="Άνοιγμα αρχείου", command="test")
-    filemenu.add_separator()  # Εμφάνιση διαχωριστικής γραμμής
-    filemenu.add_command(label="Έξοδος", command=root.destroy)
-
-    # Help menu
-    helpmenu = tk.Menu(menu)
-    menu.add_cascade(label="Βοήθεια", menu=helpmenu)
-    helpmenu.add_cascade(label="Οδηγίες παιχνιδιού", command=display_help)
-    helpmenu.add_cascade(label="Πληροφορίες", command=display_about)
-
+    # root.geometry("800x800+520+20")
+    game = Game(root)
+    game.create_menu()
     # The window is not allowed to grow when we drag it.
     root.resizable(width=False, height=False)
     root.mainloop()  # Start GUI event loop
