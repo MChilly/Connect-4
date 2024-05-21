@@ -48,6 +48,31 @@ class Board:
         # Initially draw the board
         self.draw()
 
+    # Method to handle placing a piece on the board
+    def place_piece(self, event):
+        if self.game.game_over:  # Do nothing if the game is over
+            return
+
+        col = (event.x - 10) // 50  # Calculate column from mouse click coordinates
+        if col >= self.cols or col < 0:
+            # Display warning if click is out of bounds
+            messagebox.showwarning("Invalid Move", "Column is out of bounds. Try again.")
+            return
+
+        # Place piece in the first empty cell from the bottom
+        for row in range(self.rows - 1, -1, -1):
+            if self.grid[row][col] == "":
+                self.grid[row][col] = self.game.current_player().symbol
+                self.draw()
+                if self.game.check_win(row, col):
+                    self.game.end_game()
+                else:
+                    self.game.switch_player()
+                break
+        else:
+            # Display warning if all cells in the column are filled
+            messagebox.showwarning("Invalid Move", "Column is full. Try another one.")
+
 
 # Game class to manage overall game settings and states
 class Game:
