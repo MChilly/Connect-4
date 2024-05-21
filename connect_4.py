@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import messagebox, filedialog, Label, Button, Entry
 from PIL import Image, ImageTk
 
+
 # Define a Player class with attributes for name, color, symbol, and score
 class Player:
     def __init__(self, name, color, symbol):
@@ -11,7 +12,8 @@ class Player:
         self.symbol = symbol  # Symbol to represent player on the board
         self.score = 0  # Initial score set to 0
 
-    # Board class represents the game board
+
+# Board class represents the game board
 class Board:
     def __init__(self, game, rows, cols):
         self.game = game  # A reference to the main game class
@@ -79,8 +81,9 @@ class Game:
     def __init__(self, root):
         self.root = root
         self.root.title("Connect 4")
-        self.root.geometry("800x800+520+20")  # Window dimensions 800x800. Position: +520pixels right + 20 pixels down
+        self.root.geometry("800x800+500+10")  # Window dimensions 800x800. Position: +520pixels right + 20 pixels down
         self.root.iconbitmap(r"images\game_dice.ico")
+        self.root.resizable(width=False, height=False) # The window is not allowed to grow when we drag it.
         self.root.configure(bg='black')  # Setting a black background
         self.current_player_index = 0
         self.players = [
@@ -221,10 +224,5 @@ class Game:
 #  main program
 if __name__ == "__main__":
     root = tk.Tk()
-    # Window Dimensions 800x800. Position:+ 520 pixels right + 20 pixels down.
-    root.geometry("800x800+520+20")
     game = Game(root)  # instance of the Game class
-    game.create_menu()
-    # The window is not allowed to grow when we drag it.
-    root.resizable(width=False, height=False)
     root.mainloop()  # Start GUI event loop
