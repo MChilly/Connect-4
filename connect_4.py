@@ -1,6 +1,6 @@
 # Importing necessary libraries
 import tkinter as tk
-from tkinter import *
+from tkinter import messagebox, filedialog, Label, Button, Entry
 from PIL import Image, ImageTk
 
 # Define a Player class with attributes for name, color, symbol, and score
@@ -19,6 +19,34 @@ class Board:
         self.cols = cols  # Number of columns in the game board
         self.grid = [["" for _ in range(cols)] for _ in range(rows)]  # Initialize a grid with empty strings
         self.winning_cells = []  # List to keep track of winning cells after game ends
+        # Creating a Canvas widget for drawing game elements
+        self.canvas = tk.Canvas(game.root, width=cols * 50, height=rows * 50, bg='blue')
+        self.canvas.pack()
+
+        # Method to draw or redraw the game board
+        def draw(self):
+            self.canvas.delete("all")  # Clear the canvas
+            # Loop through each cell in the grid to draw the pieces
+            for row in range(self.rows):
+                for col in range(self.cols):
+                    # Calculating coordinates for each piece
+                    x1, y1 = col * 50 + 10, row * 50 + 10
+                    x2, y2 = x1 + 40, y1 + 40
+                    color = "white"  # Default color for empty cells
+                    if (row, col) in self.winning_cells:
+                        color = "yellow"  # Highlight winning cells with yellow
+                    elif self.grid[row][col]:
+                        # Fetch player color if cell is not empty
+                        player_symbol = self.grid[row][col]
+                        color = self.game.players[int(player_symbol) - 1].color
+                        # Draw an oval (piece) in the calculated coordinates
+                    self.canvas.create_oval(x1, y1, x2, y2, fill=color, tags=("piece", row, col))
+                    # Bind mouse click on piece to place_piece method
+            self.canvas.tag_bind("piece", "<Button-1>", self.place_piece)
+
+        def create_board(self):
+            # Initially draw the board
+            self.draw()
 
 
 # Game class to manage overall game settings and states
@@ -35,6 +63,7 @@ class Game:
             Player("παίκτης 2", "green", "2")
         ]
         self.start_screen()  # Initialize start screen
+
 
     def start_screen(self):
         # Set up the start screen with game instructions and player inputs
@@ -59,12 +88,72 @@ class Game:
         self.p2 = Label(self.root, text="Παίκτης 2", font=("Helvetica", 20), bg="#f1f9f1")
         self.p2.place(x=520, y=580)
 
-        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="red", fg="white", font=("Helvetica", 14), command='test')
+        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="black", fg="white", font=("Helvetica", 14), command=self.setup_ui)
         self.start_button.pack(pady=10, side="top")
 
         self.credits_label = Label(self.root, text=" Ομαδικό Project ΠΛΗΠΡΟ-ΕΑΠ(2023-2024): Ασήμης Γ. | Ορμανίδου Μ.| Σαρρέας Γ. | Τσιλιγκάνου Μ.",
                                    font=("Helvetica", 10, "italic"), bg="#f8f8f8", fg="gray")
         self.credits_label.pack(side="bottom", pady=(5, 20))  # Adjust the padding as needed
+
+    # Setup user interface, read number of columns and initialize game board
+    def setup_ui(self):
+        """This method is triggered by the start button.Reads the number of columns for the game board.
+        Initializes the game board with these dimensions.
+        Sets up the game area, including a menu for new game, save, load, and exit actions.
+        Clears the start screen widgets from the display"""
+        try:
+            num_cols = int(self.column_entry.get())
+            if not 10 <= num_cols <= 20:
+                raise ValueError
+        except ValueError:
+            messagebox.showerror("Invalid Entry", "Please enter a valid number between 10 and 20.")
+            return
+
+        # Adjust the size of the root window to accommodate the board size
+        cell_size = 50  # The size of a single cell in the game grid
+        padding = 120  # Additional padding for the canvas/Extra space for menu and margins
+        window_size = num_cols * cell_size + padding
+        self.root.geometry(f"{window_size}x{window_size}")
+
+        # Destroy/Remove the start screen widgets
+        self.title_label.destroy()
+        self.entry_label.destroy()
+        self.column_entry.destroy()
+        self.start_button.destroy()
+        self.p1.destroy()
+        # self.o_red_label.destroy()
+        self.p2.destroy()
+        # self.x_green_label.destroy()
+        self.start_background_label.destroy()
+        self.credits_label.destroy()
+
+        # Initialize and display the game board
+        # self.root.title("Connect 4")
+        self.board = Board(self, num_cols, num_cols)
+        # self.board.draw()
+
+        # Setup score labels for players
+        self.score_labels = {
+            player.name: tk.Label(self.root, text=f"Score {player.name}: {player.score}", font=("Helvetica", 14),
+                                  bg='black', fg=player.color)
+            for player in self.players
+        }
+
+        # Create menu for game options --THE LOAD functions has to be adjusted!!!
+        menu = tk.Menu(self.root)
+        self.root.config(menu=menu)
+        filemenu = tk.Menu(menu)
+        menu.add_cascade(label="Αρχείο", menu=filemenu)
+        filemenu.add_command(label="Νέο παιχνίδι", command=self.new_game)
+        filemenu.add_command(label="Αποθήκευση ως", command=self.save_game)
+        filemenu.add_command(label="Άνοιγμα αρχείου", command=self.load_game)
+        filemenu.add_separator()
+        filemenu.add_command(label="Έξοδος", command=self.root.quit)
+
+        helpmenu = tk.Menu(menu)
+        menu.add_cascade(label="Βοήθεια", menu=helpmenu)
+        helpmenu.add_cascade(label="Οδηγίες παιχνιδιού", command=self.display_help)
+        helpmenu.add_cascade(label="About", command=self.display_about)
 
     def create_menu(self):
         # Game main menu
@@ -110,7 +199,8 @@ class Game:
 #  main program
 if __name__ == "__main__":
     root = tk.Tk()
-    # root.geometry("800x800+520+20")
+    # Window Dimensions 800x800. Position:+ 520 pixels right + 20 pixels down.
+    root.geometry("800x800+520+20")
     game = Game(root)  # instance of the Game class
     game.create_menu()
     # The window is not allowed to grow when we drag it.
