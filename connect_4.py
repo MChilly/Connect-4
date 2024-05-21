@@ -23,30 +23,30 @@ class Board:
         self.canvas = tk.Canvas(game.root, width=cols * 50, height=rows * 50, bg='blue')
         self.canvas.pack()
 
-        # Method to draw or redraw the game board
-        def draw(self):
-            self.canvas.delete("all")  # Clear the canvas
-            # Loop through each cell in the grid to draw the pieces
-            for row in range(self.rows):
-                for col in range(self.cols):
-                    # Calculating coordinates for each piece
-                    x1, y1 = col * 50 + 10, row * 50 + 10
-                    x2, y2 = x1 + 40, y1 + 40
-                    color = "white"  # Default color for empty cells
-                    if (row, col) in self.winning_cells:
-                        color = "yellow"  # Highlight winning cells with yellow
-                    elif self.grid[row][col]:
-                        # Fetch player color if cell is not empty
-                        player_symbol = self.grid[row][col]
-                        color = self.game.players[int(player_symbol) - 1].color
-                        # Draw an oval (piece) in the calculated coordinates
-                    self.canvas.create_oval(x1, y1, x2, y2, fill=color, tags=("piece", row, col))
-                    # Bind mouse click on piece to place_piece method
-            self.canvas.tag_bind("piece", "<Button-1>", self.place_piece)
+    # Method to draw or redraw the game board
+    def draw(self):
+        self.canvas.delete("all")  # Clear the canvas
+        # Loop through each cell in the grid to draw the pieces
+        for row in range(self.rows):
+            for col in range(self.cols):
+                # Calculating coordinates for each piece
+                x1, y1 = col * 50 + 10, row * 50 + 10
+                x2, y2 = x1 + 40, y1 + 40
+                color = "white"  # Default color for empty cells
+                if (row, col) in self.winning_cells:
+                    color = "yellow"  # Highlight winning cells with yellow
+                elif self.grid[row][col]:
+                    # Fetch player color if cell is not empty
+                    player_symbol = self.grid[row][col]
+                    color = self.game.players[int(player_symbol) - 1].color
+                    # Draw an oval (piece) in the calculated coordinates
+                self.canvas.create_oval(x1, y1, x2, y2, fill=color, tags=("piece", row, col))
+                # Bind mouse click on piece to place_piece method
+        self.canvas.tag_bind("piece", "<Button-1>", self.place_piece)
 
-        def create_board(self):
-            # Initially draw the board
-            self.draw()
+    def create_board(self):
+        # Initially draw the board
+        self.draw()
 
 
 # Game class to manage overall game settings and states
@@ -121,16 +121,13 @@ class Game:
         self.column_entry.destroy()
         self.start_button.destroy()
         self.p1.destroy()
-        # self.o_red_label.destroy()
         self.p2.destroy()
-        # self.x_green_label.destroy()
         self.start_background_label.destroy()
         self.credits_label.destroy()
 
         # Initialize and display the game board
-        # self.root.title("Connect 4")
         self.board = Board(self, num_cols, num_cols)
-        # self.board.draw()
+        self.board.draw()
 
         # Setup score labels for players
         self.score_labels = {
