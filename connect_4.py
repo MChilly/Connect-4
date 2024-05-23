@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog, Label, Button, Entry
 from PIL import Image, ImageTk
+import csv
 
 
 # Define a Player class with attributes for name, color, symbol, and score
@@ -73,23 +74,24 @@ class Board:
                 break
         else:
             # Display warning if all cells in the column are filled
-            messagebox.showwarning("Invalid Move", "Column is full. Try another one.")
+            messagebox.showwarning("Invalid Move", "This column is full. Try another one.")
 
 
 # Game class to manage overall game settings and states
 class Game:
     def __init__(self, root):
-        self.root = root
-        self.root.title("Connect 4")
+        self.root = root  # Main window for the application
+        self.root.title("Connect 4")  # Set window title
         self.root.geometry("800x800+500+10")  # Window dimensions 800x800. Position: +520pixels right + 20 pixels down
-        self.root.iconbitmap(r"images\game_dice.ico")
+        self.root.iconbitmap(r"images\game_dice.ico") # Set icon for the game window
         self.root.resizable(width=False, height=False) # The window is not allowed to grow when we drag it.
-        self.root.configure(bg='black')  # Setting a black background
+        self.root.configure(bg='black')  # Set background color of the window
         self.current_player_index = 0
-        self.players = [
+        self.players = [ # List of two Player objects
             Player("παίκτης 1", "red", "1"),
             Player("παίκτης 2", "green", "2")
         ]
+        self.game_over = False  # A boolean flag to check if the game has ended either due to a win or a draw.
         self.start_screen()  # Initialize start screen
 
 
@@ -157,13 +159,6 @@ class Game:
         self.board = Board(self, num_cols, num_cols)
         self.board.draw()
 
-        # Setup score labels for players
-        self.score_labels = {
-            player.name: tk.Label(self.root, text=f"Score {player.name}: {player.score}", font=("Helvetica", 14),
-                                  bg='black', fg=player.color)
-            for player in self.players
-        }
-
         # Create menu for game options --THE LOAD functions has to be adjusted!!!
         menu = tk.Menu(self.root)
         self.root.config(menu=menu)
@@ -219,6 +214,69 @@ class Game:
         about_label = tk.Label(about_window, text=about_text)
         about_label.pack()
 
+    def end_game(self):
+        self.game_over = True
+        winner = self.current_player().name
+        messagebox.showinfo("Game Over", f" Κερδίζει ο {winner}. Συγχαρητήρια!")
+        self.root.title(f"Connect 4 - Νικητής:  {winner}!")
+        self.board.draw()
+
+    # Save the current game state to a CSV file
+    def save_game(self):
+        filename = filedialog.asksaveasfilename(
+            title="Save game",
+            defaultextension=".csv",
+            filetypes=[("CSV Files", "*.csv")],
+            )
+        if not filename:  # User cancelled save
+            return
+
+        with open(filename, "w", newline='') as file:
+            writer = csv.writer(file)
+            # Directly write the board's grid to the CSV
+            for row in self.board.grid:
+                writer.writerow(row)
+            # Save player scores in the last row
+            writer.writerow([player.score for player in self.players])
+        messagebox.showinfo("Save Game", "Το παιχνίδι αποθηκεύτηκε με επιτυχία!")
+
+    # Load a game state from a CSV fil
+    def load_game(self):
+        filename = filedialog.askopenfilename(
+            title="Load game",
+            filetypes=[("CSV Files", "*.csv")]
+        )
+        if not filename:   # User cancelled the dialog, so don't load.
+            return  # Cancel load if no filename is given
+
+        with open(filename, "r") as file:
+            reader = csv.reader(file)
+            rows = list(reader)
+            # Assume the last row contains the scores
+            scores = rows.pop()  # The last row contains the scores
+            self.board.grid = [row for row in rows]
+            for i, score in enumerate(scores):
+                self.players[i].score = int(score)
+
+        # Redraw the board with the loaded state and update the game
+        # self.update_scores()
+        self.board.draw()
+        self.game_over = False  # Reset the game over status if necessary
+        messagebox.showinfo("Load Game", "Το παιχνίδι φορτώθηκε με επιτυχία!\nΜπορείτε να συνεχίσετε το γύρο σας.")
+
+    # New game method might reset the board and score
+    def new_game(self):
+        # Implementation of starting a new game
+        self.game_over = False
+        self.current_player_index = 0
+        self.players[0].score = 0
+        self.players[1].score = 0
+        self.update_scores()
+        # Reset the grid
+        self.board.grid = [["" for _ in range(self.board.cols)] for _ in range(self.board.rows)]
+        self.board.winning_cells = []  # Clears winning cells after selecting new game
+        self.board.draw()
+        self.update_turn_label()  # Update the turn label to the first player
 
 
 #  main program
