@@ -158,6 +158,7 @@ class Game:
         # Initialize and display the game board
         self.board = Board(self, num_cols, num_cols)
         self.board.draw()
+        self.create_menu()
 
         # Create menu for game options --THE LOAD functions has to be adjusted!!!
         menu = tk.Menu(self.root)
@@ -183,9 +184,9 @@ class Game:
         # File menu
         filemenu = tk.Menu(menu)
         menu.add_cascade(label='Αρχείο', menu=filemenu)
-        filemenu.add_command(label="Νέο παιχνίδι", command="test")
-        filemenu.add_command(label="Αποθήκευση ως", command="test")
-        filemenu.add_command(label="Άνοιγμα αρχείου", command="test")
+        filemenu.add_command(label="Νέο παιχνίδι", command=self.new_game)
+        filemenu.add_command(label="Αποθήκευση ως", command=self.save_game)
+        filemenu.add_command(label="Άνοιγμα αρχείου", command=self.load_game)
         filemenu.add_separator()  # Εμφάνιση διαχωριστικής γραμμής
         filemenu.add_command(label="Έξοδος", command=self.root.destroy)
 
