@@ -94,6 +94,10 @@ class Game:
         self.game_over = False  # A boolean flag to check if the game has ended either due to a win or a draw.
         self.start_screen()  # Initialize start screen
 
+        # Label to display current player's turn above the game board
+        self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="black", fg="white")
+        self.turn_label.pack(pady=(10, 0))  # Pack label with padding
+
 
     def start_screen(self):
         # Set up the start screen with game instructions and player inputs
@@ -160,21 +164,18 @@ class Game:
         self.board.draw()
         self.create_menu()
 
-        # Create menu for game options --THE LOAD functions has to be adjusted!!!
-        menu = tk.Menu(self.root)
-        self.root.config(menu=menu)
-        filemenu = tk.Menu(menu)
-        menu.add_cascade(label="Αρχείο", menu=filemenu)
-        filemenu.add_command(label="Νέο παιχνίδι", command=self.new_game)
-        filemenu.add_command(label="Αποθήκευση ως", command=self.save_game)
-        filemenu.add_command(label="Άνοιγμα αρχείου", command=self.load_game)
-        filemenu.add_separator()
-        filemenu.add_command(label="Έξοδος", command=self.root.quit)
+        # Setup score labels for players
+        self.score_labels = {
+            player.name: tk.Label(self.root, text=f"Score {player.name}: {player.score}", font=("Helvetica", 14),
+                                  bg='black', fg=player.color)
+            for player in self.players
+        }
 
-        helpmenu = tk.Menu(menu)
-        menu.add_cascade(label="Βοήθεια", menu=helpmenu)
-        helpmenu.add_cascade(label="Οδηγίες παιχνιδιού", command=self.display_help)
-        helpmenu.add_cascade(label="About", command=self.display_about)
+        self.score_labels[self.players[0].name].pack(side="left", padx=10)
+        self.score_labels[self.players[1].name].pack(side="right", padx=10)
+
+        # After setting up the UI, call update_turn_label to set the initial text
+        self.update_turn_label()
 
     def create_menu(self):
         # Game main menu
@@ -215,6 +216,64 @@ class Game:
         about_label = tk.Label(about_window, text=about_text)
         about_label.pack()
 
+    # Returns the current player object
+    def current_player(self):
+        """Returns the current player object based on current_player_index."""
+        return self.players[self.current_player_index]
+
+    # Switch to the other player
+    def switch_player(self):
+        """Toggles the current_player_index to switch turns between Player 1 and Player 2.
+        Updates the game's title bar and turn label to reflect whose turn it is."""
+        self.current_player_index = 1 - self.current_player_index
+        self.root.title(f"Connect 4 - παίζει ο {self.current_player().name}")
+        self.update_turn_label()  # Update the turn label text after switching players
+
+    # Update the label to show which player's turn it is
+    def update_turn_label(self):
+        """Updates the turn label to show which player's turn is currently active"""
+        # Update the label with the name of the current player
+        self.turn_label.config(fg=f"{self.current_player().color}", text=f"Επιλέγει ο {self.current_player().name}")
+
+    # Update the score labels after a game
+    def update_scores(self):
+        for player in self.players:
+            self.score_labels[player.name].config(text=f"Score {player.name}: {player.score}")
+
+    # Check if the current player has won after placing a piece
+    def check_win(self, row, col):
+        # Define all possible directions for connecting four pieces:
+        # Horizontal (0,1), Vertical (1,0), Diagonal from top-left to bottom-right (1,1),
+        # and Diagonal from bottom-left to top-right (1,-1), and their opposites
+        directions = [(0, 1), (1, 0), (1, 1), (1, -1), (0, -1), (-1, 0), (-1, -1), (-1, 1)]
+
+        # Retrieve the symbol of the current player (e.g., "1" or "2")
+        player_symbol = self.current_player().symbol
+
+        # Loop through each direction to check for a line of four consecutive piece
+        for row_direction, col_direction in directions:
+            count = 0
+
+            # Check for four pieces in a line around the placed piece
+            for i in range(-3, 4):  # Range from -3 to 3 includes the placed piece and 3 additional pieces in both directions
+                # Calculate row and column indices for checking pieces
+                # current_row,  current_col = row + i * row_direction, col + i * col_direction
+                current_row = row + i * row_direction  # Row index adjusted by direction and step
+                current_col = col + i * col_direction  # Column index adjusted by direction and step
+
+                # Check if the indices are within the board boundaries and the cell has the current player's symbol
+                if 0 <= current_row < self.board.rows and 0 <= current_col < self.board.cols and self.board.grid[current_row][current_col] == player_symbol:
+                    count += 1  # Increment count if a piece of the current player is found
+                    # Check if there are four in a line
+                    if count >= 4:
+                        # If four in a row are found, store the winning cells' positions
+                        self.board.winning_cells = [(row + j * row_direction, col + j * col_direction) for j in range(i, i - 4, -1)]
+                        return True  # Return True indicating the current player has won
+                else:
+                    count = 0  # Reset count if a piece is not part of a consecutive line
+        return False  # If no winning line is found after checking all directions, return False
+
+    # End the game and show the winner
     def end_game(self):
         self.game_over = True
         winner = self.current_player().name
