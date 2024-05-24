@@ -1,6 +1,8 @@
-# Importing necessary libraries
+# This is the best version
+# Importing necessary libraries and classes
+# from tkinter import *
 import tkinter as tk
-from tkinter import messagebox, filedialog, Label, Button, Entry
+from tkinter import simpledialog, messagebox, filedialog, Label, Button, Entry
 from PIL import Image, ImageTk
 import csv
 
@@ -19,7 +21,7 @@ class Board:
     def __init__(self, game, rows, cols):
         self.game = game  # A reference to the main game class
         self.rows = rows  # Number of rows in the game board
-        self.cols = cols  # Number of columns in the game board
+        self.cols = cols # Number of columns in the game board
         self.grid = [["" for _ in range(cols)] for _ in range(rows)]  # Initialize a grid with empty strings
         self.winning_cells = []  # List to keep track of winning cells after game ends
         # Creating a Canvas widget for drawing game elements
@@ -35,7 +37,7 @@ class Board:
                 # Calculating coordinates for each piece
                 x1, y1 = col * 50 + 10, row * 50 + 10
                 x2, y2 = x1 + 40, y1 + 40
-                color = "white"  # Default color for empty cells
+                color = "white" # Default color for empty cells
                 if (row, col) in self.winning_cells:
                     color = "yellow"  # Highlight winning cells with yellow
                 elif self.grid[row][col]:
@@ -54,6 +56,7 @@ class Board:
     # Method to handle placing a piece on the board
     def place_piece(self, event):
         if self.game.game_over:  # Do nothing if the game is over
+            print("Game is over, cannot place piece.")
             return
 
         col = (event.x - 10) // 50  # Calculate column from mouse click coordinates
@@ -66,38 +69,41 @@ class Board:
         for row in range(self.rows - 1, -1, -1):
             if self.grid[row][col] == "":
                 self.grid[row][col] = self.game.current_player().symbol
+                print(f"Placed piece for {self.game.current_player().name} at row {row}, column {col}.")
                 self.draw()
                 if self.game.check_win(row, col):
+                    print(f"{self.game.current_player().name} has won.")
                     self.game.end_game()
                 else:
                     self.game.switch_player()
                 break
         else:
             # Display warning if all cells in the column are filled
-            messagebox.showwarning("Invalid Move", "This column is full. Try another one.")
+            messagebox.showwarning("Invalid Move", "Column is full. Try another one.")
+
 
 
 # Game class to manage overall game settings and states
 class Game:
+    """. This approach simplifies the code by keeping all related functionality in one place, which might be preferable for
+     a smaller project or when you want to keep the Board class more focused on rendering and user interaction rather than file operations."""
     def __init__(self, root):
-        self.root = root  # Main window for the application
-        self.root.title("Connect 4")  # Set window title
-        self.root.geometry("800x800+500+10")  # Window dimensions 800x800. Position: +520pixels right + 20 pixels down
+        """Initialize the game with the main application window."""
+        self.root = root # Main window for the application
+        self.root.title("Connect 4") # Set window title
         self.root.iconbitmap(r"images\game_dice.ico") # Set icon for the game window
-        self.root.resizable(width=False, height=False) # The window is not allowed to grow when we drag it.
         self.root.configure(bg='black')  # Set background color of the window
-        self.current_player_index = 0
-        self.players = [ # List of two Player objects
+        self.current_player_index = 0  # Index to track current player/keeps track of which player's turn it is. It toggles between 0 and 1 as players take turns. starts with Player 1
+        self.players = [  # List of two Player objects
             Player("παίκτης 1", "red", "1"),
             Player("παίκτης 2", "green", "2")
         ]
         self.game_over = False  # A boolean flag to check if the game has ended either due to a win or a draw.
         self.start_screen()  # Initialize start screen
 
-        # Label to display current player's turn above the game board
+        # Label to display current player's turn
         self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="black", fg="white")
         self.turn_label.pack(pady=(10, 0))  # Pack label with padding
-
 
     def start_screen(self):
         # Set up the start screen with game instructions and player inputs
@@ -122,7 +128,22 @@ class Game:
         self.p2 = Label(self.root, text="Παίκτης 2", font=("Helvetica", 20), bg="#f1f9f1")
         self.p2.place(x=520, y=580)
 
-        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="black", fg="white", font=("Helvetica", 14), command=self.setup_ui)
+        # Assuming the provided image is the background
+        # Load and resize the first image
+        # image1 = Image.open(r'images\green_pawn.png')
+        # resized_image1 = image1.resize((100, 100), Image.LANCZOS)
+        # self.x_green_image = ImageTk.PhotoImage(resized_image1)
+        # self.x_green_label = tk.Label(self.root, image=self.x_green_image)
+        # self.x_green_label.place(x=420, y=330)  # Adjust x and y to position this image
+        #
+        # # Load and resize the second image
+        # image2 = Image.open(r'images\red_pawn.png')
+        # resized_image2 = image2.resize((100, 100), Image.LANCZOS)
+        # self.o_red_image = ImageTk.PhotoImage(resized_image2)
+        # self.o_red_label = tk.Label(self.root, image=self.o_red_image)
+        # self.o_red_label.place(x=280, y=330)  # Adjust x and y to position this image
+
+        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="red", fg="white", font=("Helvetica", 14), command=self.setup_ui)
         self.start_button.pack(pady=10, side="top")
 
         self.credits_label = Label(self.root, text=" Ομαδικό Project ΠΛΗΠΡΟ-ΕΑΠ(2023-2024): Ασήμης Γ. | Ορμανίδου Μ.| Σαρρέας Γ. | Τσιλιγκάνου Μ.",
@@ -155,14 +176,16 @@ class Game:
         self.column_entry.destroy()
         self.start_button.destroy()
         self.p1.destroy()
+        # self.o_red_label.destroy()
         self.p2.destroy()
+        # self.x_green_label.destroy()
         self.start_background_label.destroy()
         self.credits_label.destroy()
 
         # Initialize and display the game board
+        # self.root.title("Connect 4")
         self.board = Board(self, num_cols, num_cols)
         self.board.draw()
-        self.create_menu()
 
         # Setup score labels for players
         self.score_labels = {
@@ -170,32 +193,34 @@ class Game:
                                   bg='black', fg=player.color)
             for player in self.players
         }
-
+        # self.score_labels = {
+        #     self.players[0].name: tk.Label(root, text="Score Παίκτη 1: 0", font=("Helvetica", 14), bg='black', fg='red'),
+        #     self.players[1].name: tk.Label(root, text="Score Παίκτη 2: 0", font=("Helvetica", 14), bg='black', fg='green')
+        # }
         self.score_labels[self.players[0].name].pack(side="left", padx=10)
         self.score_labels[self.players[1].name].pack(side="right", padx=10)
+
+        # self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="white", fg="player.color")
+        # self.turn_label.pack(pady=(10, 0))
 
         # After setting up the UI, call update_turn_label to set the initial text
         self.update_turn_label()
 
-    def create_menu(self):
-        # Game main menu
-        menu = tk.Menu(root)
+        # Create menu for game options --THE LOAD functions has to be adjusted!!!
+        menu = tk.Menu(self.root)
         self.root.config(menu=menu)
-
-        # File menu
         filemenu = tk.Menu(menu)
-        menu.add_cascade(label='Αρχείο', menu=filemenu)
+        menu.add_cascade(label="Αρχείο", menu=filemenu)
         filemenu.add_command(label="Νέο παιχνίδι", command=self.new_game)
         filemenu.add_command(label="Αποθήκευση ως", command=self.save_game)
         filemenu.add_command(label="Άνοιγμα αρχείου", command=self.load_game)
-        filemenu.add_separator()  # Εμφάνιση διαχωριστικής γραμμής
-        filemenu.add_command(label="Έξοδος", command=self.root.destroy)
+        filemenu.add_separator()
+        filemenu.add_command(label="Έξοδος", command=self.root.quit)
 
-        # Help menu
         helpmenu = tk.Menu(menu)
         menu.add_cascade(label="Βοήθεια", menu=helpmenu)
         helpmenu.add_cascade(label="Οδηγίες παιχνιδιού", command=self.display_help)
-        helpmenu.add_cascade(label="Πληροφορίες", command=self.display_about)
+        helpmenu.add_cascade(label="About", command=self.display_about)
 
     # Display help information in a new window
     def display_help(self):
@@ -273,13 +298,62 @@ class Game:
                     count = 0  # Reset count if a piece is not part of a consecutive line
         return False  # If no winning line is found after checking all directions, return False
 
+    # End the current round of the game
+    def end_round(self):
+        self.game_over = True
+        winner = self.current_player()
+        
+        # Count the number of winning pieces and update the player's score
+        pieces_removed = len(self.board.winning_cells)
+        winner.score += pieces_removed
+
+        # Remove the winning pieces
+        for row, col in self.board.winning_cells:
+            self.board.grid[row][col] = ""  # Clear the winning cells
+
+        # Clear the winning cells list
+        self.board.winning_cells = []
+
+        # Adjust the pieces above the removed ones
+        for col in range(self.board.cols):
+            new_col = []
+            # Collect all non-empty cells in the column
+            for row in range(self.board.rows):
+                if self.board.grid[row][col]:
+                    new_col.append(self.board.grid[row][col])
+            
+            # Fill the column from bottom to top with collected pieces
+            for row in range(self.board.rows - len(new_col)):
+                self.board.grid[row][col] = ""  # Fill with empty strings at the top
+            for row in range(len(new_col)):
+                self.board.grid[self.board.rows - len(new_col) + row][col] = new_col[row]  # Place the collected pieces at the bottom
+
+        self.update_scores()  # Update the score display
+        self.board.draw()  # Redraw the board to reflect the changes
+        messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
+        self.game_over = False  # Allow the game to continue
+        self.switch_player()  # Switch to the other player for the next round
+
     # End the game and show the winner
     def end_game(self):
         self.game_over = True
-        winner = self.current_player().name
-        messagebox.showinfo("Game Over", f" Κερδίζει ο {winner}. Συγχαρητήρια!")
-        self.root.title(f"Connect 4 - Νικητής:  {winner}!")
-        self.board.draw()
+        winner = self.current_player()
+        
+        # Count the number of winning pieces and update the player's score
+        pieces_removed = len(self.board.winning_cells)
+        winner.score += pieces_removed
+
+        # Remove the winning pieces
+        for row, col in self.board.winning_cells:
+            self.board.grid[row][col] = ""  # Clear the winning cells
+
+        self.board.winning_cells = []  # Clear the winning cells list
+        self.board.draw()  # Redraw the board to reflect the changes
+        messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
+        self.game_over = False  # Allow the game to continue
+        self.switch_player()  # Switch to the other player for the next round
+
+
 
     # Save the current game state to a CSV file
     def save_game(self):
@@ -338,9 +412,12 @@ class Game:
         self.board.draw()
         self.update_turn_label()  # Update the turn label to the first player
 
-
-#  main program
+# main program
 if __name__ == "__main__":
     root = tk.Tk()
-    game = Game(root)  # instance of the Game class
-    root.mainloop()  # Start GUI event loop
+    # Διαστάσεις παραθύρου 800x800. Θέση: +520pixels δεξιά + 20 pixels κάτω.
+    root.geometry("800x800+520+20")
+    game = Game(root)
+    # Δεν επιτρέπεται να μεγαλώσει το παράθυρο αν κάνουμε drag.
+    root.resizable(width=False, height=False)
+    root.mainloop()
