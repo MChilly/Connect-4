@@ -70,16 +70,26 @@ class Board:
             if self.grid[row][col] == "":
                 self.grid[row][col] = self.game.current_player().symbol
                 print(f"Placed piece for {self.game.current_player().name} at row {row}, column {col}.")
+                self.game.total_moves += 1 # Increment the total moves after placing a piece 
                 self.draw()
                 if self.game.check_win(row, col):
                     print(f"{self.game.current_player().name} has won.")
                     self.game.end_game()
                 else:
-                    self.game.switch_player()
+                    print("No win detected.")
+                    if self.game.total_moves >= 10:  # Check if 10 moves have been made debug prints and changes
+                        print("Ending round after 10 moves.")
+                        self.game.end_round()
+                    else:
+                        print(f"Moves made:{self.game.total_moves}")
+                        self.game.switch_player()
                 break
         else:
             # Display warning if all cells in the column are filled
             messagebox.showwarning("Invalid Move", "Column is full. Try another one.")
+
+        
+         
 
 
 
@@ -100,6 +110,9 @@ class Game:
         ]
         self.game_over = False  # A boolean flag to check if the game has ended either due to a win or a draw.
         self.start_screen()  # Initialize start screen
+
+        #initializing a move counter 
+        self.total_moves = 0 
 
         # Label to display current player's turn
         self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="black", fg="white")
@@ -200,8 +213,6 @@ class Game:
         self.score_labels[self.players[0].name].pack(side="left", padx=10)
         self.score_labels[self.players[1].name].pack(side="right", padx=10)
 
-        # self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="white", fg="player.color")
-        # self.turn_label.pack(pady=(10, 0))
 
         # After setting up the UI, call update_turn_label to set the initial text
         self.update_turn_label()
@@ -262,8 +273,25 @@ class Game:
 
     # Update the score labels after a game
     def update_scores(self):
-        for player in self.players:
-            self.score_labels[player.name].config(text=f"Score {player.name}: {player.score}")
+        score_text = f"Σκορ - Παίκτης 1: {self.players[0].score} | Παίκτης 2: {self.players[1].score}"
+        self.score_label.config(text=score_text)
+        #debug prints
+        print("Score Labels Dictionary:")
+        for player_name, label in self.score_labels.items():
+            print(f"{player_name}: {label['text']}")
+
+    #just trying stuff to get the score to update correctly
+    #for player_name in self.score_labels:
+    #    self.score_labels[player_name].config(text=f"Score {player_name}: {self.players[player_name].score}")
+
+    #adding a reset game method to avoid the need for restart
+    def reset_game(self):
+        self.game_over = False
+        self.board.grid = [["" for _ in range(self.board.cols)] for _ in range(self.board.rows)]
+        self.board.winning_cells = []
+        self.board.draw()
+        self.update_turn_label()
+
 
     # Check if the current player has won after placing a piece
     def check_win(self, row, col):
@@ -333,6 +361,10 @@ class Game:
         messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
         self.game_over = False  # Allow the game to continue
         self.switch_player()  # Switch to the other player for the next round
+        print("End of round - Scores updated.") #prints to debug
+
+        
+
 
     # End the game and show the winner
     def end_game(self):
@@ -352,6 +384,7 @@ class Game:
         messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
         self.game_over = False  # Allow the game to continue
         self.switch_player()  # Switch to the other player for the next round
+        print("End of game - Scores updated.") #print to debug
 
 
 
@@ -393,12 +426,12 @@ class Game:
                 self.players[i].score = int(score)
 
         # Redraw the board with the loaded state and update the game
-        # self.update_scores()
+        self.update_scores()
         self.board.draw()
         self.game_over = False  # Reset the game over status if necessary
         messagebox.showinfo("Load Game", "Το παιχνίδι φορτώθηκε με επιτυχία!\nΜπορείτε να συνεχίσετε το γύρο σας.")
 
-    # New game method might reset the board and score
+    # New game method resets the board and score
     def new_game(self):
         # Implementation of starting a new game
         self.game_over = False
