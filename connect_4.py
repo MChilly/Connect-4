@@ -274,11 +274,10 @@ class Game:
     # Update the score labels after a game
     def update_scores(self):
         score_text = f"Σκορ - Παίκτης 1: {self.players[0].score} | Παίκτης 2: {self.players[1].score}"
-        self.score_label.config(text=score_text)
         #debug prints
         print("Score Labels Dictionary:")
         for player_name, label in self.score_labels.items():
-            print(f"{player_name}: {label['text']}")
+            label.config(text=score_text)
 
     #just trying stuff to get the score to update correctly
     #for player_name in self.score_labels:
