@@ -74,15 +74,15 @@ class Board:
                 self.draw()
                 if self.game.check_win(row, col):
                     print(f"{self.game.current_player().name} has won.")
-                    self.game.end_game()
+                    self.game.end_round()
                 else:
-                    print("No win detected.")
-                    if self.game.total_moves >= 10:  # Check if 10 moves have been made debug prints and changes
-                        print("Ending round after 10 moves.")
-                        self.game.end_round()
-                    else:
-                        print(f"Moves made:{self.game.total_moves}")
-                        self.game.switch_player()
+                    #print("No win detected.") debug prints
+                    #The lines below were used to debug and are left in case I need
+                    #if self.game.total_moves >= 10:  # Check if 10 moves have been made debug prints and changes
+                    #    print("Ending round after 10 moves.")
+                    #    self.game.end_round()
+                    print(f"Moves made:{self.game.total_moves}")
+                    self.game.switch_player()
                 break
         else:
             # Display warning if all cells in the column are filled
@@ -275,7 +275,7 @@ class Game:
     def update_scores(self):
         score_text = f"Σκορ - Παίκτης 1: {self.players[0].score} | Παίκτης 2: {self.players[1].score}"
         #debug prints
-        print("Score Labels Dictionary:")
+        #print("Score Labels Dictionary:")  # yet another print for debugging
         for player_name, label in self.score_labels.items():
             label.config(text=score_text)
 
@@ -330,13 +330,31 @@ class Game:
         self.game_over = True
         winner = self.current_player()
         
-        # Count the number of winning pieces and update the player's score
-        pieces_removed = len(self.board.winning_cells)
+        
+        # Initialize a set to keep track of cells that are removed
+        removed_cells = set()
+
+        # Iterate over the winning cells and check for adjacent cells of the same color
+        for row, col in self.board.winning_cells:
+            if self.board.grid[row][col] == winner.symbol:
+                # Add the winning cell to the set of removed cells
+                removed_cells.add((row, col))
+                # Check adjacent cells in all directions
+                for dr in [-1, 0, 1]:
+                    for dc in [-1, 0, 1]:
+                        if (dr != 0 or dc != 0) and 0 <= row + dr < self.board.rows and 0 <= col + dc < self.board.cols:
+                            # If the adjacent cell has the same color, add it to the set of removed cells
+                            if self.board.grid[row + dr][col + dc] == winner.symbol:
+                                removed_cells.add((row + dr, col + dc))
+
+        # Count the number of removed pieces
+        pieces_removed = len(removed_cells)
+        # Update the player's score
         winner.score += pieces_removed
 
-        # Remove the winning pieces
-        for row, col in self.board.winning_cells:
-            self.board.grid[row][col] = ""  # Clear the winning cells
+        # Remove the winning pieces AND adjacent
+        for row, col in removed_cells:
+            self.board.grid[row][col] = ""
 
         # Clear the winning cells list
         self.board.winning_cells = []
@@ -360,7 +378,7 @@ class Game:
         messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
         self.game_over = False  # Allow the game to continue
         self.switch_player()  # Switch to the other player for the next round
-        print("End of round - Scores updated.") #prints to debug
+        #print("End of round - Scores updated.") #prints to debug
 
         
 
@@ -383,7 +401,7 @@ class Game:
         messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
         self.game_over = False  # Allow the game to continue
         self.switch_player()  # Switch to the other player for the next round
-        print("End of game - Scores updated.") #print to debug
+        #print("End of game - Scores updated.") #print to debug
 
 
 
