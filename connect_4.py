@@ -427,12 +427,8 @@ class Game:
         self.board.draw()
         self.update_turn_label()  # Update the turn label to the first player
 
-# main program
+#  main program
 if __name__ == "__main__":
     root = tk.Tk()
-    # Διαστάσεις παραθύρου 800x800. Θέση: +520pixels δεξιά + 20 pixels κάτω.
-    root.geometry("800x800+520+20")
-    game = Game(root)
-    # Δεν επιτρέπεται να μεγαλώσει το παράθυρο αν κάνουμε drag.
-    root.resizable(width=False, height=False)
-    root.mainloop()
+    game = Game(root)  # instance of the Game class
+    root.mainloop()  # Start GUI event loop
