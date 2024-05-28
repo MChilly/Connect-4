@@ -138,21 +138,6 @@ class Game:
         self.p2 = Label(self.root, text="Παίκτης 2", font=("Helvetica", 20), bg="#f1f9f1")
         self.p2.place(x=520, y=580)
 
-        # Assuming the provided image is the background
-        # Load and resize the first image
-        # image1 = Image.open(r'images\green_pawn.png')
-        # resized_image1 = image1.resize((100, 100), Image.LANCZOS)
-        # self.x_green_image = ImageTk.PhotoImage(resized_image1)
-        # self.x_green_label = tk.Label(self.root, image=self.x_green_image)
-        # self.x_green_label.place(x=420, y=330)  # Adjust x and y to position this image
-        #
-        # # Load and resize the second image
-        # image2 = Image.open(r'images\red_pawn.png')
-        # resized_image2 = image2.resize((100, 100), Image.LANCZOS)
-        # self.o_red_image = ImageTk.PhotoImage(resized_image2)
-        # self.o_red_label = tk.Label(self.root, image=self.o_red_image)
-        # self.o_red_label.place(x=280, y=330)  # Adjust x and y to position this image
-
         self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="red", fg="white", font=("Helvetica", 14), command=self.setup_ui)
         self.start_button.pack(pady=10, side="top")
 
