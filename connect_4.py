@@ -176,9 +176,9 @@ class Game:
         self.credits_label.destroy()
 
         # Initialize and display the game board
-        # self.root.title("Connect 4")
         self.board = Board(self, num_cols, num_cols)
         self.board.draw()
+        self.create_menu()
 
         # Setup score labels for players
         self.score_labels = {
@@ -186,10 +186,7 @@ class Game:
                                   bg='black', fg=player.color)
             for player in self.players
         }
-        # self.score_labels = {
-        #     self.players[0].name: tk.Label(root, text="Score Παίκτη 1: 0", font=("Helvetica", 14), bg='black', fg='red'),
-        #     self.players[1].name: tk.Label(root, text="Score Παίκτη 2: 0", font=("Helvetica", 14), bg='black', fg='green')
-        # }
+       
         self.score_labels[self.players[0].name].pack(side="left", padx=10)
         self.score_labels[self.players[1].name].pack(side="right", padx=10)
 
