@@ -1,6 +1,4 @@
-# This is the best version
 # Importing necessary libraries and classes
-# from tkinter import *
 import tkinter as tk
 from tkinter import simpledialog, messagebox, filedialog, Label, Button, Entry
 from PIL import Image, ImageTk
