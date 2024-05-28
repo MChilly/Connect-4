@@ -171,9 +171,7 @@ class Game:
         self.column_entry.destroy()
         self.start_button.destroy()
         self.p1.destroy()
-        # self.o_red_label.destroy()
         self.p2.destroy()
-        # self.x_green_label.destroy()
         self.start_background_label.destroy()
         self.credits_label.destroy()
 
