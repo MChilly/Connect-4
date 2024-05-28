@@ -84,13 +84,8 @@ class Board:
                 break
         else:
             # Display warning if all cells in the column are filled
-            messagebox.showwarning("Invalid Move", "Column is full. Try another one.")
-
-        
-         
-
-
-
+            messagebox.showwarning("Invalid Move", "Column is full. Try another one.")      
+   
 # Game class to manage overall game settings and states
 class Game:
     def __init__(self, root):
