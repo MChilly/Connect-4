@@ -254,24 +254,8 @@ class Game:
 
     # Update the score labels after a game
     def update_scores(self):
-        score_text = f"Σκορ - Παίκτης 1: {self.players[0].score} | Παίκτης 2: {self.players[1].score}"
-        #debug prints
-        #print("Score Labels Dictionary:")  # yet another print for debugging
-        for player_name, label in self.score_labels.items():
-            label.config(text=score_text)
-
-    #just trying stuff to get the score to update correctly
-    #for player_name in self.score_labels:
-    #    self.score_labels[player_name].config(text=f"Score {player_name}: {self.players[player_name].score}")
-
-    #adding a reset game method to avoid the need for restart
-    def reset_game(self):
-        self.game_over = False
-        self.board.grid = [["" for _ in range(self.board.cols)] for _ in range(self.board.rows)]
-        self.board.winning_cells = []
-        self.board.draw()
-        self.update_turn_label()
-
+        for player in self.players:
+            self.score_labels[player.name].config(text=f"Score {player.name}: {player.score}")
 
     # Check if the current player has won after placing a piece
     def check_win(self, row, col):
