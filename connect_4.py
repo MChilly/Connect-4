@@ -93,16 +93,15 @@ class Board:
 
 # Game class to manage overall game settings and states
 class Game:
-    """. This approach simplifies the code by keeping all related functionality in one place, which might be preferable for
-     a smaller project or when you want to keep the Board class more focused on rendering and user interaction rather than file operations."""
     def __init__(self, root):
-        """Initialize the game with the main application window."""
-        self.root = root # Main window for the application
-        self.root.title("Connect 4") # Set window title
+        self.root = root  # Main window for the application
+        self.root.title("Connect 4")  # Set window title
+        self.root.geometry("800x800+500+10")  # Window dimensions 800x800. Position: +520pixels right + 20 pixels down
         self.root.iconbitmap(r"images\game_dice.ico") # Set icon for the game window
+        self.root.resizable(width=False, height=False) # The window is not allowed to grow when we drag it.
         self.root.configure(bg='black')  # Set background color of the window
-        self.current_player_index = 0  # Index to track current player/keeps track of which player's turn it is. It toggles between 0 and 1 as players take turns. starts with Player 1
-        self.players = [  # List of two Player objects
+        self.current_player_index = 0
+        self.players = [ # List of two Player objects
             Player("παίκτης 1", "red", "1"),
             Player("παίκτης 2", "green", "2")
         ]
