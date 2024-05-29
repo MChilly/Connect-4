@@ -189,25 +189,25 @@ class Game:
         # After setting up the UI, call update_turn_label to set the initial text
         self.update_turn_label()
 
-        def create_menu(self):
-            # Game main menu
-            menu = tk.Menu(root)
-            self.root.config(menu=menu)
-    
-            # File menu
-            filemenu = tk.Menu(menu)
-            menu.add_cascade(label='Αρχείο', menu=filemenu)
-            filemenu.add_command(label="Νέο παιχνίδι", command=self.new_game)
-            filemenu.add_command(label="Αποθήκευση ως", command=self.save_game)
-            filemenu.add_command(label="Άνοιγμα αρχείου", command=self.load_game)
-            filemenu.add_separator()  # Εμφάνιση διαχωριστικής γραμμής
-            filemenu.add_command(label="Έξοδος", command=self.root.destroy)
-    
-            # Help menu
-            helpmenu = tk.Menu(menu)
-            menu.add_cascade(label="Βοήθεια", menu=helpmenu)
-            helpmenu.add_cascade(label="Οδηγίες παιχνιδιού", command=self.display_help)
-            helpmenu.add_cascade(label="Πληροφορίες", command=self.display_about)
+    def create_menu(self):
+        # Game main menu
+        menu = tk.Menu(root)
+        self.root.config(menu=menu)
+
+        # File menu
+        filemenu = tk.Menu(menu)
+        menu.add_cascade(label='Αρχείο', menu=filemenu)
+        filemenu.add_command(label="Νέο παιχνίδι", command=self.new_game)
+        filemenu.add_command(label="Αποθήκευση ως", command=self.save_game)
+        filemenu.add_command(label="Άνοιγμα αρχείου", command=self.load_game)
+        filemenu.add_separator()  # Εμφάνιση διαχωριστικής γραμμής
+        filemenu.add_command(label="Έξοδος", command=self.root.destroy)
+
+        # Help menu
+        helpmenu = tk.Menu(menu)
+        menu.add_cascade(label="Βοήθεια", menu=helpmenu)
+        helpmenu.add_cascade(label="Οδηγίες παιχνιδιού", command=self.display_help)
+        helpmenu.add_cascade(label="Πληροφορίες", command=self.display_about)
 
     # Display help information in a new window
     def display_help(self):
