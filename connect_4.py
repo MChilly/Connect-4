@@ -67,6 +67,7 @@ class Board:
 
     def create_board(self):
         """Initialize the game board by drawing it for the first time.
+
         This method is responsible for setting up the initial state of the game board.
         It calls the `draw` method to render the empty game board on the canvas.
         """
@@ -74,6 +75,7 @@ class Board:
 
     def place_piece(self, event):
         """Handle placing a piece on the board when a cell is clicked.
+
         Args:
             event (tk.Event): The event object containing details about the mouse click.
         """
@@ -109,6 +111,7 @@ class Board:
 # Game class to manage overall game settings and states
 class Game:
     """Class representing the Connect 4 game.
+
     Attributes:
         root (tk.Tk): The main window for the application.
         current_player_index (int): Index of the current player.
@@ -165,13 +168,14 @@ class Game:
         self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="red", fg="white", font=("Helvetica", 14), command=self.setup_ui)
         self.start_button.pack(pady=10, side="top")
 
-        self.credits_label = Label(self.root, text=" Ομαδικό Project ΠΛΗΠΡΟ-ΕΑΠ(2023-2024): Ασήμης Γ. | Ορμανίδου Μ.| Σαρρέας Γ. | Τσιλιγκάνου Μ.",
+        self.credits_label = Label(self.root, text=" Ομαδικό Project ΠΛΗΠΡΟ-ΕΑΠ(2023-2024): Ορμανίδου Μαρία. |  Σαρρέας Γεώργιος. | Τσιλιγκάνου Μαρία.",
                                    font=("Helvetica", 10, "italic"), bg="#f8f8f8", fg="gray")
         self.credits_label.pack(side="bottom", pady=(5, 20))  # Adjust the padding as needed
 
     # Setup user interface, read number of columns and initialize game board
     def setup_ui(self):
         """This method is triggered by the start button and sets up the user interface,
+
          read the number of columns and initialize the game board with these dimensions,
          Clears the start screen widgets from the display"""
         try:
@@ -241,19 +245,58 @@ class Game:
         """Opens a new window to show game rules or help, related to how to play the game."""
         extra_window = tk.Toplevel()
         extra_window.title("Οδηγίες παιχνιδιού")
-        extra_window.geometry('500x500')
-        tk.Label(extra_window,
-                 text="Παιχνίδι για δύο παίκτες. Ο κάθε παίκτης προσπαθεί να σχηματίσει όσο περισσότερες τετράδες οριζόντια, κάθετα ή διαγώνια,\n"
-                      " προσπαθώντας ταυτόχρονα να εμποδίσει τον αντίπαλο να κάνει το ίδιο. ").pack()
+        extra_window.geometry('640x600')
+        extra_window.configure(bg='white')
+
+        heading = tk.Label(extra_window, text="Οδηγίες Παιχνιδιού Connect 4", font=("Helvetica", 18, "bold"),
+                           bg="white")
+        heading.pack(pady=10)
+
+        instructions = ("Το Connect 4 είναι ένα παιχνίδι στρατηγικής για δύο παίκτες.\n"
+                        "Στόχος είναι να σχηματίσετε μια γραμμή από τέσσερα κομμάτια\n"
+                        "του χρώματός σας είτε οριζόντια, κάθετα ή διαγώνια.\n\n"
+                        "Οδηγίες:\n"
+                        "1. Κάθε παίκτης επιλέγει μια στήλη για να ρίξει ένα κομμάτι.\n"
+                        "2. Τα κομμάτια πέφτουν στο χαμηλότερο διαθέσιμο κενό της στήλης.\n"
+                        "3. Το παιχνίδι συνεχίζεται μέχρι κάποιος παίκτης να σχηματίσει\n"
+                        "   τέσσερα κομμάτια στη σειρά ή να γεμίσει ο πίνακας χωρίς νικητή.\n"
+                        "4. Εάν ένας παίκτης σχηματίσει τετράδα, τα κομμάτια αυτά\n"
+                        "   αφαιρούνται και ο παίκτης κερδίζει πόντους.\n"
+                        "5. Ο γύρος τελειώνει και ξεκινά νέος γύρος.\n\n"
+                        "Καλή διασκέδαση!")
+
+        instructions_label = tk.Label(extra_window, text=instructions, font=("Helvetica", 12), justify="left",
+                                      bg="white")
+        instructions_label.pack(padx=20, pady=10)
 
     # Display about information in a new window
     def display_about(self):
         """Opens a new window providing information about the game or the developers"""
         about_window = tk.Toplevel(root)
-        about_window.title("About")
-        about_text = "Πληροφορίες για το παιχνίδι ή τον προγραμματιστή."
-        about_label = tk.Label(about_window, text=about_text)
-        about_label.pack()
+        about_window.title("Πληροφορίες")
+        about_window.geometry('600x600')
+        about_window.configure(bg='white')
+
+        heading = tk.Label(about_window, text="Σχετικά με το Project", font=("Helvetica", 18, "bold"), bg="white")
+        heading.pack(pady=10)
+
+        about_text = ("Αυτό το παιχνίδι Connect 4 δημιουργήθηκε ως μέρος του ομαδικού project\n"
+                      "για το μάθημα ΠΛΗΠΡΟ στο ΕΑΠ κατά το ακαδημαϊκό έτος 2023-2024.\n\n"
+
+                      "Τεχνικές Πληροφορίες:\n"
+                      "Έκδοση Python: 3.10.9\n"
+                      "Βιβλιοθήκες που Χρησιμοποιήθηκαν:\n"
+                      "1. tkinter\n"
+                      "2. PIL (Pillow)\n"
+                      "3. csv\n\n"
+                      "Προγραμματιστές:\n"
+                      "1. Ορμανίδου Μαρία\n"
+                      "2. Σαρρέας Γεώργιος\n"
+                      "3. Τσιλιγκάνου Μαρία\n\n"
+                      "Ελπίζουμε να απολαύσετε το παιχνίδι!\n\n")
+
+        about_label = tk.Label(about_window, text=about_text, font=("Helvetica", 12), justify="left", bg="white")
+        about_label.pack(padx=20, pady=10)
 
     # Returns the current player object
     def current_player(self):
@@ -283,6 +326,7 @@ class Game:
     # Check if the current player has won after placing a piece
     def check_win(self, row, col):
         """Check if the current player has won after placing a piece.
+
                 Args:
                     row (int): The row index of the last placed piece.
                     col (int): The column index of the last placed piece.
