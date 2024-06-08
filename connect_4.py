@@ -1,6 +1,6 @@
-# Importing necessary libraries
+# Importing necessary libraries and classes
 import tkinter as tk
-from tkinter import messagebox, filedialog, Label, Button, Entry
+from tkinter import simpledialog, messagebox, filedialog, Label, Button, Entry
 from PIL import Image, ImageTk
 import csv
 
@@ -19,7 +19,7 @@ class Board:
     def __init__(self, game, rows, cols):
         self.game = game  # A reference to the main game class
         self.rows = rows  # Number of rows in the game board
-        self.cols = cols  # Number of columns in the game board
+        self.cols = cols # Number of columns in the game board
         self.grid = [["" for _ in range(cols)] for _ in range(rows)]  # Initialize a grid with empty strings
         self.winning_cells = []  # List to keep track of winning cells after game ends
         # Creating a Canvas widget for drawing game elements
@@ -35,7 +35,7 @@ class Board:
                 # Calculating coordinates for each piece
                 x1, y1 = col * 50 + 10, row * 50 + 10
                 x2, y2 = x1 + 40, y1 + 40
-                color = "white"  # Default color for empty cells
+                color = "white" # Default color for empty cells
                 if (row, col) in self.winning_cells:
                     color = "yellow"  # Highlight winning cells with yellow
                 elif self.grid[row][col]:
@@ -54,6 +54,7 @@ class Board:
     # Method to handle placing a piece on the board
     def place_piece(self, event):
         if self.game.game_over:  # Do nothing if the game is over
+            print("Game is over, cannot place piece.")
             return
 
         col = (event.x - 10) // 50  # Calculate column from mouse click coordinates
@@ -66,17 +67,25 @@ class Board:
         for row in range(self.rows - 1, -1, -1):
             if self.grid[row][col] == "":
                 self.grid[row][col] = self.game.current_player().symbol
+                print(f"Placed piece for {self.game.current_player().name} at row {row}, column {col}.")
+                self.game.total_moves += 1 # Increment the total moves after placing a piece 
                 self.draw()
                 if self.game.check_win(row, col):
-                    self.game.end_game()
+                    print(f"{self.game.current_player().name} has won.")
+                    self.game.end_round()
                 else:
+                    #print("No win detected.") debug prints
+                    #The lines below were used to debug and are left in case I need
+                    #if self.game.total_moves >= 10:  # Check if 10 moves have been made debug prints and changes
+                    #    print("Ending round after 10 moves.")
+                    #    self.game.end_round()
+                    print(f"Moves made:{self.game.total_moves}")
                     self.game.switch_player()
                 break
         else:
             # Display warning if all cells in the column are filled
-            messagebox.showwarning("Invalid Move", "This column is full. Try another one.")
-
-
+            messagebox.showwarning("Invalid Move", "Column is full. Try another one.")      
+   
 # Game class to manage overall game settings and states
 class Game:
     def __init__(self, root):
@@ -94,10 +103,12 @@ class Game:
         self.game_over = False  # A boolean flag to check if the game has ended either due to a win or a draw.
         self.start_screen()  # Initialize start screen
 
-        # Label to display current player's turn above the game board
+        #initializing a move counter 
+        self.total_moves = 0 
+
+        # Label to display current player's turn
         self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="black", fg="white")
         self.turn_label.pack(pady=(10, 0))  # Pack label with padding
-
 
     def start_screen(self):
         # Set up the start screen with game instructions and player inputs
@@ -122,7 +133,7 @@ class Game:
         self.p2 = Label(self.root, text="Παίκτης 2", font=("Helvetica", 20), bg="#f1f9f1")
         self.p2.place(x=520, y=580)
 
-        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="black", fg="white", font=("Helvetica", 14), command=self.setup_ui)
+        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="red", fg="white", font=("Helvetica", 14), command=self.setup_ui)
         self.start_button.pack(pady=10, side="top")
 
         self.credits_label = Label(self.root, text=" Ομαδικό Project ΠΛΗΠΡΟ-ΕΑΠ(2023-2024): Ασήμης Γ. | Ορμανίδου Μ.| Σαρρέας Γ. | Τσιλιγκάνου Μ.",
@@ -170,9 +181,10 @@ class Game:
                                   bg='black', fg=player.color)
             for player in self.players
         }
-
+       
         self.score_labels[self.players[0].name].pack(side="left", padx=10)
         self.score_labels[self.players[1].name].pack(side="right", padx=10)
+
 
         # After setting up the UI, call update_turn_label to set the initial text
         self.update_turn_label()
@@ -273,13 +285,85 @@ class Game:
                     count = 0  # Reset count if a piece is not part of a consecutive line
         return False  # If no winning line is found after checking all directions, return False
 
+    # End the current round of the game
+    def end_round(self):
+        self.game_over = True
+        winner = self.current_player()
+        
+        
+        # Initialize a set to keep track of cells that are removed
+        removed_cells = set()
+
+        # Iterate over the winning cells and check for adjacent cells of the same color
+        for row, col in self.board.winning_cells:
+            if self.board.grid[row][col] == winner.symbol:
+                # Add the winning cell to the set of removed cells
+                removed_cells.add((row, col))
+                # Check adjacent cells in all directions
+                for dr in [-1, 0, 1]:
+                    for dc in [-1, 0, 1]:
+                        if (dr != 0 or dc != 0) and 0 <= row + dr < self.board.rows and 0 <= col + dc < self.board.cols:
+                            # If the adjacent cell has the same color, add it to the set of removed cells
+                            if self.board.grid[row + dr][col + dc] == winner.symbol:
+                                removed_cells.add((row + dr, col + dc))
+
+        # Count the number of removed pieces
+        pieces_removed = len(removed_cells)
+        # Update the player's score
+        winner.score += pieces_removed
+
+        # Remove the winning pieces AND adjacent
+        for row, col in removed_cells:
+            self.board.grid[row][col] = ""
+
+        # Clear the winning cells list
+        self.board.winning_cells = []
+
+        # Adjust the pieces above the removed ones
+        for col in range(self.board.cols):
+            new_col = []
+            # Collect all non-empty cells in the column
+            for row in range(self.board.rows):
+                if self.board.grid[row][col]:
+                    new_col.append(self.board.grid[row][col])
+            
+            # Fill the column from bottom to top with collected pieces
+            for row in range(self.board.rows - len(new_col)):
+                self.board.grid[row][col] = ""  # Fill with empty strings at the top
+            for row in range(len(new_col)):
+                self.board.grid[self.board.rows - len(new_col) + row][col] = new_col[row]  # Place the collected pieces at the bottom
+
+        self.update_scores()  # Update the score display
+        self.board.draw()  # Redraw the board to reflect the changes
+        messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
+        self.game_over = False  # Allow the game to continue
+        self.switch_player()  # Switch to the other player for the next round
+        #print("End of round - Scores updated.") #prints to debug
+
+        
+
+
     # End the game and show the winner
     def end_game(self):
         self.game_over = True
-        winner = self.current_player().name
-        messagebox.showinfo("Game Over", f" Κερδίζει ο {winner}. Συγχαρητήρια!")
-        self.root.title(f"Connect 4 - Νικητής:  {winner}!")
-        self.board.draw()
+        winner = self.current_player()
+        
+        # Count the number of winning pieces and update the player's score
+        pieces_removed = len(self.board.winning_cells)
+        winner.score += pieces_removed
+
+        # Remove the winning pieces
+        for row, col in self.board.winning_cells:
+            self.board.grid[row][col] = ""  # Clear the winning cells
+
+        self.board.winning_cells = []  # Clear the winning cells list
+        self.board.draw()  # Redraw the board to reflect the changes
+        messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
+        self.game_over = False  # Allow the game to continue
+        self.switch_player()  # Switch to the other player for the next round
+        #print("End of game - Scores updated.") #print to debug
+
+
 
     # Save the current game state to a CSV file
     def save_game(self):
@@ -319,12 +403,12 @@ class Game:
                 self.players[i].score = int(score)
 
         # Redraw the board with the loaded state and update the game
-        # self.update_scores()
+        self.update_scores()
         self.board.draw()
         self.game_over = False  # Reset the game over status if necessary
         messagebox.showinfo("Load Game", "Το παιχνίδι φορτώθηκε με επιτυχία!\nΜπορείτε να συνεχίσετε το γύρο σας.")
 
-    # New game method might reset the board and score
+    # New game method resets the board and score
     def new_game(self):
         # Implementation of starting a new game
         self.game_over = False
@@ -337,7 +421,6 @@ class Game:
         self.board.winning_cells = []  # Clears winning cells after selecting new game
         self.board.draw()
         self.update_turn_label()  # Update the turn label to the first player
-
 
 #  main program
 if __name__ == "__main__":
