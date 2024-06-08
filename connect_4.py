@@ -1,6 +1,6 @@
 # Importing necessary libraries and classes
 import tkinter as tk
-from tkinter import simpledialog, messagebox, filedialog, Label, Button, Entry
+from tkinter import messagebox, filedialog, Label, Button, Entry
 from PIL import Image, ImageTk
 import csv
 
@@ -133,14 +133,13 @@ class Game:
             Player("παίκτης 2", "green", "2")
         ]
         self.game_over = False  # A boolean flag to check if the game has ended either due to a win or a draw.
-        self.start_screen()  # Initialize start screen
-
-        # initializing a move counter
-        self.total_moves = 0
+        self.total_moves = 0  # initializing a move counter
 
         # Label to display current player's turn
         self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="black", fg="white")
         self.turn_label.pack(pady=(10, 0))  # Pack label with padding
+
+        self.start_screen()  # Initialize start screen
 
     def start_screen(self):
         """Set up the start screen with game instructions and player inputs."""
@@ -151,7 +150,7 @@ class Game:
 
         # Labels and Entry for number of columns
         self.title_label = Label(self.root, text="Connect 4", font=("Helvetica", 30, "bold"), fg="blue", bg="white")
-        self.title_label.pack(pady=(50, 10))  # Adjust the padding as needed
+        self.title_label.pack(pady=(10, 10))  # Adjust the padding as needed
 
         self.entry_label = Label(self.root, text="Επιλογή Στηλών Παιχνιδιού (10-20)", font=("Helvetica", 14), bg="white")
         self.entry_label.pack()
@@ -165,7 +164,7 @@ class Game:
         self.p2 = Label(self.root, text="Παίκτης 2", font=("Helvetica", 20), bg="#f1f9f1")
         self.p2.place(x=520, y=580)
 
-        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="red", fg="white", font=("Helvetica", 14), command=self.setup_ui)
+        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="black", fg="white", font=("Helvetica", 14), command=self.setup_ui)
         self.start_button.pack(pady=10, side="top")
 
         self.credits_label = Label(self.root, text=" Ομαδικό Project ΠΛΗΠΡΟ-ΕΑΠ(2023-2024): Ορμανίδου Μαρία. |  Σαρρέας Γεώργιος. | Τσιλιγκάνου Μαρία.",
@@ -191,8 +190,15 @@ class Game:
         padding = 120  # Additional padding for the canvas/Extra space for menu and margins
         window_size = num_cols * cell_size + padding
         self.root.geometry(f"{window_size}x{window_size}")
+        self.clear_start_screen()
+        self.board = Board(self, num_cols, num_cols) # Initialize and display the game board
+        self.board.draw()
+        self.create_menu()
+        self.setup_score_labels()
+        self.update_turn_label() #  After setting up the UI, call update_turn_label to set the initial text
 
-        # Destroy/Remove the start screen widgets
+    def clear_start_screen(self):
+        """Clear the start screen widgets from the display."""
         self.title_label.destroy()
         self.entry_label.destroy()
         self.column_entry.destroy()
@@ -201,24 +207,6 @@ class Game:
         self.p2.destroy()
         self.start_background_label.destroy()
         self.credits_label.destroy()
-
-        # Initialize and display the game board
-        self.board = Board(self, num_cols, num_cols)
-        self.board.draw()
-        self.create_menu()
-
-        # Setup score labels for players
-        self.score_labels = {
-            player.name: tk.Label(self.root, text=f"Score {player.name}: {player.score}", font=("Helvetica", 14),
-                                  bg='black', fg=player.color)
-            for player in self.players
-        }
-
-        self.score_labels[self.players[0].name].pack(side="left", padx=10)
-        self.score_labels[self.players[1].name].pack(side="right", padx=10)
-
-        # After setting up the UI, call update_turn_label to set the initial text
-        self.update_turn_label()
 
     def create_menu(self):
         """Create the main menu for the game."""
@@ -240,63 +228,17 @@ class Game:
         helpmenu.add_cascade(label="Οδηγίες παιχνιδιού", command=self.display_help)
         helpmenu.add_cascade(label="Πληροφορίες", command=self.display_about)
 
-    # Display help information in a new window
-    def display_help(self):
-        """Opens a new window to show game rules or help, related to how to play the game."""
-        extra_window = tk.Toplevel()
-        extra_window.title("Οδηγίες παιχνιδιού")
-        extra_window.geometry('640x600')
-        extra_window.configure(bg='white')
+    def setup_score_labels(self):
+        """Set up the labels to display player scores."""
+        self.score_labels = {
+            player.name: tk.Label(self.root, text=f"Score {player.name}: {player.score}", font=("Helvetica", 14),
+                                  bg='black', fg=player.color)
+            for player in self.players
+        }
+        self.score_labels[self.players[0].name].pack(side="left", padx=10)
+        self.score_labels[self.players[1].name].pack(side="right", padx=10)
 
-        heading = tk.Label(extra_window, text="Οδηγίες Παιχνιδιού Connect 4", font=("Helvetica", 18, "bold"),
-                           bg="white")
-        heading.pack(pady=10)
 
-        instructions = ("Το Connect 4 είναι ένα παιχνίδι στρατηγικής για δύο παίκτες.\n"
-                        "Στόχος είναι να σχηματίσετε μια γραμμή από τέσσερα κομμάτια\n"
-                        "του χρώματός σας είτε οριζόντια, κάθετα ή διαγώνια.\n\n"
-                        "Οδηγίες:\n"
-                        "1. Κάθε παίκτης επιλέγει μια στήλη για να ρίξει ένα κομμάτι.\n"
-                        "2. Τα κομμάτια πέφτουν στο χαμηλότερο διαθέσιμο κενό της στήλης.\n"
-                        "3. Το παιχνίδι συνεχίζεται μέχρι κάποιος παίκτης να σχηματίσει\n"
-                        "   τέσσερα κομμάτια στη σειρά ή να γεμίσει ο πίνακας χωρίς νικητή.\n"
-                        "4. Εάν ένας παίκτης σχηματίσει τετράδα, τα κομμάτια αυτά\n"
-                        "   αφαιρούνται και ο παίκτης κερδίζει πόντους.\n"
-                        "5. Ο γύρος τελειώνει και ξεκινά νέος γύρος.\n\n"
-                        "Καλή διασκέδαση!")
-
-        instructions_label = tk.Label(extra_window, text=instructions, font=("Helvetica", 12), justify="left",
-                                      bg="white")
-        instructions_label.pack(padx=20, pady=10)
-
-    # Display about information in a new window
-    def display_about(self):
-        """Opens a new window providing information about the game or the developers"""
-        about_window = tk.Toplevel(root)
-        about_window.title("Πληροφορίες")
-        about_window.geometry('600x600')
-        about_window.configure(bg='white')
-
-        heading = tk.Label(about_window, text="Σχετικά με το Project", font=("Helvetica", 18, "bold"), bg="white")
-        heading.pack(pady=10)
-
-        about_text = ("Αυτό το παιχνίδι Connect 4 δημιουργήθηκε ως μέρος του ομαδικού project\n"
-                      "για το μάθημα ΠΛΗΠΡΟ στο ΕΑΠ κατά το ακαδημαϊκό έτος 2023-2024.\n\n"
-
-                      "Τεχνικές Πληροφορίες:\n"
-                      "Έκδοση Python: 3.10.9\n"
-                      "Βιβλιοθήκες που Χρησιμοποιήθηκαν:\n"
-                      "1. tkinter\n"
-                      "2. PIL (Pillow)\n"
-                      "3. csv\n\n"
-                      "Προγραμματιστές:\n"
-                      "1. Ορμανίδου Μαρία\n"
-                      "2. Σαρρέας Γεώργιος\n"
-                      "3. Τσιλιγκάνου Μαρία\n\n"
-                      "Ελπίζουμε να απολαύσετε το παιχνίδι!\n\n")
-
-        about_label = tk.Label(about_window, text=about_text, font=("Helvetica", 12), justify="left", bg="white")
-        about_label.pack(padx=20, pady=10)
 
     # Returns the current player object
     def current_player(self):
@@ -496,6 +438,63 @@ class Game:
         self.board.winning_cells = []  # Clears winning cells after selecting new game
         self.board.draw()
         self.update_turn_label()  # Update the turn label to the first player
+
+    def display_help(self):
+        """Opens a new window to show game rules or help, related to how to play the game."""
+        extra_window = tk.Toplevel()
+        extra_window.title("Οδηγίες παιχνιδιού")
+        extra_window.geometry('640x600')
+        extra_window.configure(bg='white')
+
+        heading = tk.Label(extra_window, text="Οδηγίες Παιχνιδιού Connect 4", font=("Helvetica", 18, "bold"),
+                           bg="white")
+        heading.pack(pady=10)
+
+        instructions = ("Το Connect 4 είναι ένα παιχνίδι στρατηγικής για δύο παίκτες.\n"
+                        "Στόχος είναι να σχηματίσετε μια γραμμή από τέσσερα κομμάτια\n"
+                        "του χρώματός σας είτε οριζόντια, κάθετα ή διαγώνια.\n\n"
+                        "Οδηγίες:\n"
+                        "1. Κάθε παίκτης επιλέγει μια στήλη για να ρίξει ένα κομμάτι.\n"
+                        "2. Τα κομμάτια πέφτουν στο χαμηλότερο διαθέσιμο κενό της στήλης.\n"
+                        "3. Το παιχνίδι συνεχίζεται μέχρι κάποιος παίκτης να σχηματίσει\n"
+                        "   τέσσερα κομμάτια στη σειρά ή να γεμίσει ο πίνακας χωρίς νικητή.\n"
+                        "4. Εάν ένας παίκτης σχηματίσει τετράδα, τα κομμάτια αυτά\n"
+                        "   αφαιρούνται και ο παίκτης κερδίζει πόντους.\n"
+                        "5. Ο γύρος τελειώνει και ξεκινά νέος γύρος.\n\n"
+                        "Καλή διασκέδαση!")
+
+        instructions_label = tk.Label(extra_window, text=instructions, font=("Helvetica", 12), justify="left",
+                                      bg="white")
+        instructions_label.pack(padx=20, pady=10)
+
+    # Display about information in a new window
+    def display_about(self):
+        """Opens a new window providing information about the game or the developers"""
+        about_window = tk.Toplevel(root)
+        about_window.title("Πληροφορίες")
+        about_window.geometry('600x600')
+        about_window.configure(bg='white')
+
+        heading = tk.Label(about_window, text="Σχετικά με το Project", font=("Helvetica", 18, "bold"), bg="white")
+        heading.pack(pady=10)
+
+        about_text = ("Αυτό το παιχνίδι Connect 4 δημιουργήθηκε ως μέρος του ομαδικού project\n"
+                      "για το μάθημα ΠΛΗΠΡΟ στο ΕΑΠ κατά το ακαδημαϊκό έτος 2023-2024.\n\n"
+
+                      "Τεχνικές Πληροφορίες:\n"
+                      "Έκδοση Python: 3.10.9\n"
+                      "Βιβλιοθήκες που Χρησιμοποιήθηκαν:\n"
+                      "1. tkinter\n"
+                      "2. PIL (Pillow)\n"
+                      "3. csv\n\n"
+                      "Προγραμματιστές:\n"
+                      "1. Ορμανίδου Μαρία\n"
+                      "2. Σαρρέας Γεώργιος\n"
+                      "3. Τσιλιγκάνου Μαρία\n\n"
+                      "Ελπίζουμε να απολαύσετε το παιχνίδι!\n\n")
+
+        about_label = tk.Label(about_window, text=about_text, font=("Helvetica", 12), justify="left", bg="white")
+        about_label.pack(padx=20, pady=10)
 
 #  main program
 if __name__ == "__main__":
