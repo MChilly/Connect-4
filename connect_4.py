@@ -1,6 +1,6 @@
 # Importing necessary libraries and classes
 import tkinter as tk
-from tkinter import simpledialog, messagebox, filedialog, Label, Button, Entry
+from tkinter import messagebox, filedialog, Label, Button, Entry
 from PIL import Image, ImageTk
 import csv
 
@@ -133,14 +133,13 @@ class Game:
             Player("παίκτης 2", "green", "2")
         ]
         self.game_over = False  # A boolean flag to check if the game has ended either due to a win or a draw.
-        self.start_screen()  # Initialize start screen
-
-        # initializing a move counter
-        self.total_moves = 0
+        self.total_moves = 0  # initializing a move counter
 
         # Label to display current player's turn
         self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="black", fg="white")
         self.turn_label.pack(pady=(10, 0))  # Pack label with padding
+
+        self.start_screen()  # Initialize start screen
 
     def start_screen(self):
         """Set up the start screen with game instructions and player inputs."""
@@ -151,7 +150,7 @@ class Game:
 
         # Labels and Entry for number of columns
         self.title_label = Label(self.root, text="Connect 4", font=("Helvetica", 30, "bold"), fg="blue", bg="white")
-        self.title_label.pack(pady=(50, 10))  # Adjust the padding as needed
+        self.title_label.pack(pady=(10, 10))  # Adjust the padding as needed
 
         self.entry_label = Label(self.root, text="Επιλογή Στηλών Παιχνιδιού (10-20)", font=("Helvetica", 14), bg="white")
         self.entry_label.pack()
@@ -165,7 +164,7 @@ class Game:
         self.p2 = Label(self.root, text="Παίκτης 2", font=("Helvetica", 20), bg="#f1f9f1")
         self.p2.place(x=520, y=580)
 
-        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="red", fg="white", font=("Helvetica", 14), command=self.setup_ui)
+        self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="black", fg="white", font=("Helvetica", 14), command=self.setup_ui)
         self.start_button.pack(pady=10, side="top")
 
         self.credits_label = Label(self.root, text=" Ομαδικό Project ΠΛΗΠΡΟ-ΕΑΠ(2023-2024): Ορμανίδου Μαρία. |  Σαρρέας Γεώργιος. | Τσιλιγκάνου Μαρία.",
