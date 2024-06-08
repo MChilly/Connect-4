@@ -7,6 +7,14 @@ import csv
 
 # Define a Player class with attributes for name, color, symbol, and score
 class Player:
+    """Class representing a player in the Connect 4 game.
+
+    Attributes:
+        name (str): The name of the player.
+        color (str): The color representing the player.
+        symbol (str): The symbol representing the player on the board.
+        score (int): The score of the player.
+    """
     def __init__(self, name, color, symbol):
         self.name = name  # Player's name
         self.color = color  # Color to represent player in the game
@@ -14,8 +22,17 @@ class Player:
         self.score = 0  # Initial score set to 0
 
 
-# Board class represents the game board
 class Board:
+    """Class representing the Connect 4 game board.
+
+    Attributes:
+        game (Game): Reference to the game object.
+        rows (int): Number of rows in the game board.
+        cols (int): Number of columns in the game board.
+        grid (list): 2D list representing the game board.
+        winning_cells (list): List of cells that are part of a winning combination.
+        canvas (tk.Canvas): Canvas widget for drawing the game board.
+    """
     def __init__(self, game, rows, cols):
         self.game = game  # A reference to the main game class
         self.rows = rows  # Number of rows in the game board
@@ -28,6 +45,7 @@ class Board:
 
     # Method to draw or redraw the game board
     def draw(self):
+        """Draw or redraw the game board on the canvas."""
         self.canvas.delete("all")  # Clear the canvas
         # Loop through each cell in the grid to draw the pieces
         for row in range(self.rows):
@@ -48,11 +66,17 @@ class Board:
         self.canvas.tag_bind("piece", "<Button-1>", self.place_piece)
 
     def create_board(self):
-        # Initially draw the board
+        """Initialize the game board by drawing it for the first time.
+        This method is responsible for setting up the initial state of the game board.
+        It calls the `draw` method to render the empty game board on the canvas.
+        """
         self.draw()
 
-    # Method to handle placing a piece on the board
     def place_piece(self, event):
+        """Handle placing a piece on the board when a cell is clicked.
+        Args:
+            event (tk.Event): The event object containing details about the mouse click.
+        """
         if self.game.game_over:  # Do nothing if the game is over
             print("Game is over, cannot place piece.")
             return
@@ -68,26 +92,31 @@ class Board:
             if self.grid[row][col] == "":
                 self.grid[row][col] = self.game.current_player().symbol
                 print(f"Placed piece for {self.game.current_player().name} at row {row}, column {col}.")
-                self.game.total_moves += 1 # Increment the total moves after placing a piece 
+                self.game.total_moves += 1 # Increment the total moves after placing a piece
                 self.draw()
                 if self.game.check_win(row, col):
                     print(f"{self.game.current_player().name} has won.")
                     self.game.end_round()
                 else:
-                    #print("No win detected.") debug prints
-                    #The lines below were used to debug and are left in case I need
-                    #if self.game.total_moves >= 10:  # Check if 10 moves have been made debug prints and changes
-                    #    print("Ending round after 10 moves.")
-                    #    self.game.end_round()
                     print(f"Moves made:{self.game.total_moves}")
                     self.game.switch_player()
                 break
         else:
             # Display warning if all cells in the column are filled
-            messagebox.showwarning("Invalid Move", "Column is full. Try another one.")      
-   
+            messagebox.showwarning("Invalid Move", "Column is full. Try another one.")
+
+
 # Game class to manage overall game settings and states
 class Game:
+    """Class representing the Connect 4 game.
+    Attributes:
+        root (tk.Tk): The main window for the application.
+        current_player_index (int): Index of the current player.
+        players (list): List of Player objects representing the players.
+        game_over (bool): Flag to check if the game has ended.
+        total_moves (int): Total number of moves made in the game.
+        turn_label (tk.Label): Label to display the current player's turn.
+    """
     def __init__(self, root):
         self.root = root  # Main window for the application
         self.root.title("Connect 4")  # Set window title
@@ -103,15 +132,15 @@ class Game:
         self.game_over = False  # A boolean flag to check if the game has ended either due to a win or a draw.
         self.start_screen()  # Initialize start screen
 
-        #initializing a move counter 
-        self.total_moves = 0 
+        # initializing a move counter
+        self.total_moves = 0
 
         # Label to display current player's turn
         self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="black", fg="white")
         self.turn_label.pack(pady=(10, 0))  # Pack label with padding
 
     def start_screen(self):
-        # Set up the start screen with game instructions and player inputs
+        """Set up the start screen with game instructions and player inputs."""
         self.start_image = Image.open(r'images\red_green_pawn3.png')  # Background image for the start screen
         self.start_photo_image = ImageTk.PhotoImage(self.start_image)
         self.start_background_label = tk.Label(self.root, image=self.start_photo_image)
@@ -142,10 +171,9 @@ class Game:
 
     # Setup user interface, read number of columns and initialize game board
     def setup_ui(self):
-        """This method is triggered by the start button.Reads the number of columns for the game board.
-        Initializes the game board with these dimensions.
-        Sets up the game area, including a menu for new game, save, load, and exit actions.
-        Clears the start screen widgets from the display"""
+        """This method is triggered by the start button and sets up the user interface,
+         read the number of columns and initialize the game board with these dimensions,
+         Clears the start screen widgets from the display"""
         try:
             num_cols = int(self.column_entry.get())
             if not 10 <= num_cols <= 20:
@@ -181,16 +209,15 @@ class Game:
                                   bg='black', fg=player.color)
             for player in self.players
         }
-       
+
         self.score_labels[self.players[0].name].pack(side="left", padx=10)
         self.score_labels[self.players[1].name].pack(side="right", padx=10)
-
 
         # After setting up the UI, call update_turn_label to set the initial text
         self.update_turn_label()
 
     def create_menu(self):
-        # Game main menu
+        """Create the main menu for the game."""
         menu = tk.Menu(root)
         self.root.config(menu=menu)
 
@@ -230,7 +257,7 @@ class Game:
 
     # Returns the current player object
     def current_player(self):
-        """Returns the current player object based on current_player_index."""
+        """Returns the current player object."""
         return self.players[self.current_player_index]
 
     # Switch to the other player
@@ -249,11 +276,19 @@ class Game:
 
     # Update the score labels after a game
     def update_scores(self):
+        """Update the score labels after a game."""
         for player in self.players:
             self.score_labels[player.name].config(text=f"Score {player.name}: {player.score}")
 
     # Check if the current player has won after placing a piece
     def check_win(self, row, col):
+        """Check if the current player has won after placing a piece.
+                Args:
+                    row (int): The row index of the last placed piece.
+                    col (int): The column index of the last placed piece.
+                Returns:
+                    bool: True if the current player has won, False otherwise.
+                """
         # Define all possible directions for connecting four pieces:
         # Horizontal (0,1), Vertical (1,0), Diagonal from top-left to bottom-right (1,1),
         # and Diagonal from bottom-left to top-right (1,-1), and their opposites
@@ -287,10 +322,10 @@ class Game:
 
     # End the current round of the game
     def end_round(self):
+        """End the current round of the game."""
         self.game_over = True
         winner = self.current_player()
-        
-        
+
         # Initialize a set to keep track of cells that are removed
         removed_cells = set()
 
@@ -326,7 +361,7 @@ class Game:
             for row in range(self.board.rows):
                 if self.board.grid[row][col]:
                     new_col.append(self.board.grid[row][col])
-            
+
             # Fill the column from bottom to top with collected pieces
             for row in range(self.board.rows - len(new_col)):
                 self.board.grid[row][col] = ""  # Fill with empty strings at the top
@@ -338,16 +373,13 @@ class Game:
         messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
         self.game_over = False  # Allow the game to continue
         self.switch_player()  # Switch to the other player for the next round
-        #print("End of round - Scores updated.") #prints to debug
-
-        
-
+        # print("End of round - Scores updated.") #prints to debug
 
     # End the game and show the winner
     def end_game(self):
         self.game_over = True
         winner = self.current_player()
-        
+
         # Count the number of winning pieces and update the player's score
         pieces_removed = len(self.board.winning_cells)
         winner.score += pieces_removed
@@ -363,10 +395,8 @@ class Game:
         self.switch_player()  # Switch to the other player for the next round
         #print("End of game - Scores updated.") #print to debug
 
-
-
-    # Save the current game state to a CSV file
     def save_game(self):
+        """Save the current game state to a CSV file."""
         filename = filedialog.asksaveasfilename(
             title="Save game",
             defaultextension=".csv",
@@ -386,6 +416,7 @@ class Game:
 
     # Load a game state from a CSV fil
     def load_game(self):
+        """Load a game state from a CSV file."""
         filename = filedialog.askopenfilename(
             title="Load game",
             filetypes=[("CSV Files", "*.csv")]
@@ -410,7 +441,7 @@ class Game:
 
     # New game method resets the board and score
     def new_game(self):
-        # Implementation of starting a new game
+        """Start a new game by resetting the board and scores."""
         self.game_over = False
         self.current_player_index = 0
         self.players[0].score = 0
