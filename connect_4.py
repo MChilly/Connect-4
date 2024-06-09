@@ -1,6 +1,6 @@
 # Importing necessary libraries and classes
 import tkinter as tk
-from tkinter import messagebox, filedialog, Label, Button, Entry
+from tkinter import messagebox, filedialog, Label, Button, Entry, StringVar
 from PIL import Image, ImageTk
 import csv
 
@@ -43,7 +43,6 @@ class Board:
         self.canvas = tk.Canvas(game.root, width=cols * 50, height=rows * 50, bg='blue')
         self.canvas.pack()
 
-    # Method to draw or redraw the game board
     def draw(self):
         """Draw or redraw the game board on the canvas."""
         self.canvas.delete("all")  # Clear the canvas
@@ -84,17 +83,13 @@ class Board:
             return
 
         col = (event.x - 10) // 50  # Calculate column from mouse click coordinates
-        if col >= self.cols or col < 0:
-            # Display warning if click is out of bounds
-            messagebox.showwarning("Invalid Move", "Column is out of bounds. Try again.")
-            return
 
         # Place piece in the first empty cell from the bottom
         for row in range(self.rows - 1, -1, -1):
             if self.grid[row][col] == "":
                 self.grid[row][col] = self.game.current_player().symbol
                 print(f"Placed piece for {self.game.current_player().name} at row {row}, column {col}.")
-                self.game.total_moves += 1 # Increment the total moves after placing a piece
+                self.game.total_moves += 1  # Increment the total moves after placing a piece
                 self.draw()
                 if self.game.check_win(row, col):
                     print(f"{self.game.current_player().name} has won.")
@@ -105,7 +100,7 @@ class Board:
                 break
         else:
             # Display warning if all cells in the column are filled
-            messagebox.showwarning("Invalid Move", "Column is full. Try another one.")
+            messagebox.showwarning("Γεμάτη στήλη!", "Η στήλη είναι γεμάτη. Παρακαλώ δοκιμάστε άλλη στήλη!")
 
 
 # Game class to manage overall game settings and states
@@ -138,7 +133,6 @@ class Game:
         # Label to display current player's turn
         self.turn_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="black", fg="white")
         self.turn_label.pack(pady=(10, 0))  # Pack label with padding
-
         self.start_screen()  # Initialize start screen
 
     def start_screen(self):
@@ -222,6 +216,20 @@ class Game:
         filemenu.add_separator()  # Εμφάνιση διαχωριστικής γραμμής
         filemenu.add_command(label="Έξοδος", command=self.root.destroy)
 
+        # timer menu
+        timermenu = tk.Menu(menu)
+        menu.add_cascade(label="Χρονόμετρο", menu=timermenu)
+        self.timer_var = StringVar(self.root)
+        self.timer_var.set("Διάλεξε χρόνο")
+        timermenu.add_radiobutton(label="1 λεπτό", command=lambda: self.set_timer(1))
+        timermenu.add_radiobutton(label="3 λεπτά", command=lambda: self.set_timer(3))
+        timermenu.add_radiobutton(label="5 λεπτά", command=lambda: self.set_timer(5))
+
+        # timer
+        self.timer = None
+        self.timer_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="black", fg="white")
+        self.timer_label.pack(side="bottom", pady=(10, 0))
+
         # Help menu
         helpmenu = tk.Menu(menu)
         menu.add_cascade(label="Βοήθεια", menu=helpmenu)
@@ -238,14 +246,10 @@ class Game:
         self.score_labels[self.players[0].name].pack(side="left", padx=10)
         self.score_labels[self.players[1].name].pack(side="right", padx=10)
 
-
-
-    # Returns the current player object
     def current_player(self):
         """Returns the current player object."""
         return self.players[self.current_player_index]
 
-    # Switch to the other player
     def switch_player(self):
         """Toggles the current_player_index to switch turns between Player 1 and Player 2.
         Updates the game's title bar and turn label to reflect whose turn it is."""
@@ -253,19 +257,16 @@ class Game:
         self.root.title(f"Connect 4 - παίζει ο {self.current_player().name}")
         self.update_turn_label()  # Update the turn label text after switching players
 
-    # Update the label to show which player's turn it is
     def update_turn_label(self):
         """Updates the turn label to show which player's turn is currently active"""
         # Update the label with the name of the current player
         self.turn_label.config(fg=f"{self.current_player().color}", text=f"Επιλέγει ο {self.current_player().name}")
 
-    # Update the score labels after a game
     def update_scores(self):
         """Update the score labels after a game."""
         for player in self.players:
             self.score_labels[player.name].config(text=f"Score {player.name}: {player.score}")
 
-    # Check if the current player has won after placing a piece
     def check_win(self, row, col):
         """Check if the current player has won after placing a piece.
 
@@ -306,7 +307,6 @@ class Game:
                     count = 0  # Reset count if a piece is not part of a consecutive line
         return False  # If no winning line is found after checking all directions, return False
 
-    # End the current round of the game
     def end_round(self):
         """End the current round of the game."""
         self.game_over = True
@@ -356,35 +356,52 @@ class Game:
 
         self.update_scores()  # Update the score display
         self.board.draw()  # Redraw the board to reflect the changes
-        messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
+        messagebox.showinfo("Τέλος γύρου!", f"Κερδίζει ο {winner.name}! {pieces_removed} πούλια αφαιρέθηκαν από το ταμπλό!")
         self.game_over = False  # Allow the game to continue
         self.switch_player()  # Switch to the other player for the next round
-        # print("End of round - Scores updated.") #prints to debug
+        print("End of round - Scores updated.")  # print to debug ending round
 
-    # End the game and show the winner
+    def set_timer(self, minutes):
+        """Set the game timer and start counting down."""
+        if self.timer:  # Check if there's an existing timer running
+            self.root.after_cancel(self.timer)  # Cancel the existing timer if it exists
+        self.time_left = minutes * 60  # Convert minutes to seconds and store in time_left
+        self.update_timer()  # Call update_timer to start the countdown
+
+    def update_timer(self):
+        """Update the timer display and check for timer expiration."""
+        minutes, seconds = divmod(self.time_left, 60)  # Convert total seconds to minutes and seconds
+        self.timer_label.config(
+            text=f"Time left: {minutes:02}:{seconds:02}")  # Update the timer label with the current time
+        if self.time_left > 0:  # Check if there is still time left
+            self.time_left -= 1  # Decrease the time left by one second
+            self.timer = self.root.after(1000, self.update_timer)  # Call update_timer again after 1 second
+        else:
+            self.end_game()  # Call end_game if the timer has expired
+
     def end_game(self):
-        self.game_over = True
-        winner = self.current_player()
-
-        # Count the number of winning pieces and update the player's score
-        pieces_removed = len(self.board.winning_cells)
-        winner.score += pieces_removed
-
-        # Remove the winning pieces
-        for row, col in self.board.winning_cells:
-            self.board.grid[row][col] = ""  # Clear the winning cells
-
-        self.board.winning_cells = []  # Clear the winning cells list
-        self.board.draw()  # Redraw the board to reflect the changes
-        messagebox.showinfo("Round Over", f"{winner.name} wins this round! {pieces_removed} pieces removed.")
-        self.game_over = False  # Allow the game to continue
-        self.switch_player()  # Switch to the other player for the next round
-        #print("End of game - Scores updated.") #print to debug
+        """End the game and declare the winner based on scores."""
+        self.game_over = True  # Set the game over flag to True to stop further moves
+        if self.timer:  # Check if there is an active timer
+            self.root.after_cancel(self.timer)  # Cancel the active timer to stop it
+        # Compare the scores of the two players to determine the winner
+        if self.players[0].score > self.players[1].score:
+            winner = self.players[0]  # Player 1 is the winner if their score is higher
+        elif self.players[1].score > self.players[0].score:
+            winner = self.players[1]  # Player 2 is the winner if their score is higher
+        else:
+            winner = None  # It's a tie if both players have the same score
+        # Display a message box with the result of the game
+        if winner:
+            messagebox.showinfo("Τέλος χρόνου!", f"Τέλος χρόνου! ο {winner.name} κερδίζει με {winner.score} πόντους!")
+        else:
+            messagebox.showinfo("Τέλος χρόνου!", "Τέλος χρόνου! Ισοπαλία!")
+        self.new_game() # Start a new game by resetting the game state
 
     def save_game(self):
         """Save the current game state to a CSV file."""
         filename = filedialog.asksaveasfilename(
-            title="Save game",
+            title="Αποθήκευση παιχνιδιού",
             defaultextension=".csv",
             filetypes=[("CSV Files", "*.csv")],
             )
@@ -398,13 +415,12 @@ class Game:
                 writer.writerow(row)
             # Save player scores in the last row
             writer.writerow([player.score for player in self.players])
-        messagebox.showinfo("Save Game", "Το παιχνίδι αποθηκεύτηκε με επιτυχία!")
+        messagebox.showinfo("Αποθήκευση παιχνιδιού", "Το παιχνίδι αποθηκεύτηκε με επιτυχία!")
 
-    # Load a game state from a CSV fil
     def load_game(self):
         """Load a game state from a CSV file."""
         filename = filedialog.askopenfilename(
-            title="Load game",
+            title="Φόρτωση παιχνιδιού",
             filetypes=[("CSV Files", "*.csv")]
         )
         if not filename:   # User cancelled the dialog, so don't load.
@@ -423,7 +439,7 @@ class Game:
         self.update_scores()
         self.board.draw()
         self.game_over = False  # Reset the game over status if necessary
-        messagebox.showinfo("Load Game", "Το παιχνίδι φορτώθηκε με επιτυχία!\nΜπορείτε να συνεχίσετε το γύρο σας.")
+        messagebox.showinfo("Φόρτωση παιχνιδιού", "Το παιχνίδι φορτώθηκε με επιτυχία!\nΜπορείτε να συνεχίσετε το γύρο σας.")
 
     # New game method resets the board and score
     def new_game(self):
@@ -443,31 +459,33 @@ class Game:
         """Opens a new window to show game rules or help, related to how to play the game."""
         extra_window = tk.Toplevel()
         extra_window.title("Οδηγίες παιχνιδιού")
-        extra_window.geometry('640x600')
+        extra_window.geometry('840x500')
         extra_window.configure(bg='white')
 
         heading = tk.Label(extra_window, text="Οδηγίες Παιχνιδιού Connect 4", font=("Helvetica", 18, "bold"),
                            bg="white")
         heading.pack(pady=10)
 
-        instructions = ("Το Connect 4 είναι ένα παιχνίδι στρατηγικής για δύο παίκτες.\n"
-                        "Στόχος είναι να σχηματίσετε μια γραμμή από τέσσερα κομμάτια\n"
-                        "του χρώματός σας είτε οριζόντια, κάθετα ή διαγώνια.\n\n"
-                        "Οδηγίες:\n"
-                        "1. Κάθε παίκτης επιλέγει μια στήλη για να ρίξει ένα κομμάτι.\n"
-                        "2. Τα κομμάτια πέφτουν στο χαμηλότερο διαθέσιμο κενό της στήλης.\n"
-                        "3. Το παιχνίδι συνεχίζεται μέχρι κάποιος παίκτης να σχηματίσει\n"
-                        "   τέσσερα κομμάτια στη σειρά ή να γεμίσει ο πίνακας χωρίς νικητή.\n"
-                        "4. Εάν ένας παίκτης σχηματίσει τετράδα, τα κομμάτια αυτά\n"
-                        "   αφαιρούνται και ο παίκτης κερδίζει πόντους.\n"
-                        "5. Ο γύρος τελειώνει και ξεκινά νέος γύρος.\n\n"
-                        "Καλή διασκέδαση!")
+        instructions = (
+            "Το Connect 4 είναι ένα παιχνίδι στρατηγικής για δύο παίκτες. Στόχος είναι να σχηματίσετε μια γραμμή\n"
+            "από τέσσερα πούλια του χρώματός σας είτε οριζόντια, κάθετα ή διαγώνια.\n\n"
+            "Οδηγίες:\n"
+            "1. Κάθε παίκτης επιλέγει μια στήλη για να ρίξει ένα κομμάτι.\n"
+            "2. Τα πούλια πέφτουν στο χαμηλότερο διαθέσιμο κενό της στήλης.\n"
+            "3. Το παιχνίδι συνεχίζεται μέχρι κάποιος παίκτης να σχηματίσει\n"
+            "   τέσσερα πούλια ίδιου χρώματος στη σειρά ή να γεμίσει ο πίνακας χωρίς νικητή.\n"
+            "4. Εάν ένας παίκτης σχηματίσει τετράδα, τα κομμάτια αυτά αφαιρούνται και ο παίκτης κερδίζει πόντους.\n"
+            "5. Ο γύρος τελειώνει και ξεκινά νέος γύρος.\n\n"
+            "Χρήση Χρονομέτρου:\n"
+            "1. Επιλέξτε τον επιθυμητό χρόνο από το μενού 'Χρονόμετρο' (1, 3, ή 5 λεπτά).\n"
+            "2. Ο χρόνος θα αρχίσει να μετρά αντίστροφα και θα εμφανίζεται στο κάτω μέρος της οθόνης.\n"
+            "3. Όταν ο χρόνος τελειώσει, το παιχνίδι θα λήξει και θα ανακοινωθεί ο νικητής βάσει της βαθμολογίας.\n\n"
+            "Καλή διασκέδαση!")
 
         instructions_label = tk.Label(extra_window, text=instructions, font=("Helvetica", 12), justify="left",
                                       bg="white")
         instructions_label.pack(padx=20, pady=10)
 
-    # Display about information in a new window
     def display_about(self):
         """Opens a new window providing information about the game or the developers"""
         about_window = tk.Toplevel(root)
