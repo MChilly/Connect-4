@@ -161,7 +161,7 @@ class Game:
         self.start_button = Button(self.root, text="Έναρξη Παιχνιδιού", bg="black", fg="white", font=("Helvetica", 14), command=self.setup_ui)
         self.start_button.pack(pady=10, side="top")
 
-        self.credits_label = Label(self.root, text=" Ομαδικό Project ΠΛΗΠΡΟ-ΕΑΠ(2023-2024): Ορμανίδου Μαρία. |  Σαρρέας Γεώργιος. | Τσιλιγκάνου Μαρία.",
+        self.credits_label = Label(self.root, text=" Ομαδικό Project ΠΛΗΠΡΟ-ΕΑΠ(2023-2024): Ορμανίδου Μαρία  |  Σαρρέας Γεώργιος  | Τσιλιγκάνου Μαρία",
                                    font=("Helvetica", 10, "italic"), bg="#f8f8f8", fg="gray")
         self.credits_label.pack(side="bottom", pady=(5, 20))  # Adjust the padding as needed
 
@@ -176,7 +176,7 @@ class Game:
             if not 10 <= num_cols <= 20:
                 raise ValueError
         except ValueError:
-            messagebox.showerror("Invalid Entry", "Please enter a valid number between 10 and 20.")
+            messagebox.showerror("Λάθος αριθμός στηλών", "Παρακαλώ εισάγετε από 10 έως 20 στήλες.")
             return
 
         # Adjust the size of the root window to accommodate the board size
@@ -338,7 +338,13 @@ class Game:
             self.board.grid[row][col] = ""
 
         # Clear the winning cells list
-        self.board.winning_cells = []
+        def clear_winning_cells():
+            """clears the winning_cells list, redraws the board, and switches to the other player."""
+            self.board.winning_cells = []  # Clear the winning cells list
+            self.board.draw()  # Redraw the board to reflect the changes
+            self.game_over = False  # Allow the game to continue
+            self.switch_player()  # Switch to the other player for the next round
+            print("End of round - Scores updated.")  # print to debug ending round
 
         # Adjust the pieces above the removed ones
         for col in range(self.board.cols):
@@ -357,9 +363,7 @@ class Game:
         self.update_scores()  # Update the score display
         self.board.draw()  # Redraw the board to reflect the changes
         messagebox.showinfo("Τέλος γύρου!", f"Κερδίζει ο {winner.name}! {pieces_removed} πούλια αφαιρέθηκαν από το ταμπλό!")
-        self.game_over = False  # Allow the game to continue
-        self.switch_player()  # Switch to the other player for the next round
-        print("End of round - Scores updated.")  # print to debug ending round
+        self.root.after(500, clear_winning_cells)  # Clear winning cells after 0.5 seconds
 
     def set_timer(self, minutes):
         """Set the game timer and start counting down."""
