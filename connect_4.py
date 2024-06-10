@@ -94,6 +94,8 @@ class Board:
                 if self.game.check_win(row, col):
                     print(f"{self.game.current_player().name} has won.")
                     self.game.end_round()
+                elif self.game.total_moves == self.rows * self.cols:  # check if the board is full
+                    self.game.full_board_draw()
                 else:
                     print(f"Moves made:{self.game.total_moves}")
                     self.game.switch_player()
@@ -189,7 +191,7 @@ class Game:
         self.board.draw()
         self.create_menu()
         self.setup_score_labels()
-        self.update_turn_label() #  After setting up the UI, call update_turn_label to set the initial text
+        self.update_turn_label()  # After setting up the UI, call update_turn_label to set the initial text
 
     def clear_start_screen(self):
         """Clear the start screen widgets from the display."""
@@ -337,7 +339,6 @@ class Game:
         for row, col in removed_cells:
             self.board.grid[row][col] = ""
 
-        # Clear the winning cells list
         def clear_winning_cells():
             """clears the winning_cells list, redraws the board, and switches to the other player."""
             self.board.winning_cells = []  # Clear the winning cells list
@@ -364,6 +365,12 @@ class Game:
         self.board.draw()  # Redraw the board to reflect the changes
         messagebox.showinfo("Τέλος γύρου!", f"Κερδίζει ο {winner.name}! {pieces_removed} πούλια αφαιρέθηκαν από το ταμπλό!")
         self.root.after(500, clear_winning_cells)  # Clear winning cells after 0.5 seconds
+
+    def full_board_draw(self):
+        """Declare the game as a draw."""
+        self.game_over = True
+        messagebox.showinfo("Ισοπαλία!", "Το παιχνίδι έληξε με ισοπαλία! Δεν υπάρχουν άλλες διαθέσιμες κινήσεις.")
+        self.new_game()
 
     def set_timer(self, minutes):
         """Set the game timer and start counting down."""
@@ -400,7 +407,7 @@ class Game:
             messagebox.showinfo("Τέλος χρόνου!", f"Τέλος χρόνου! ο {winner.name} κερδίζει με {winner.score} πόντους!")
         else:
             messagebox.showinfo("Τέλος χρόνου!", "Τέλος χρόνου! Ισοπαλία!")
-        self.new_game() # Start a new game by resetting the game state
+        self.new_game()  # Start a new game by resetting the game state
 
     def save_game(self):
         """Save the current game state to a CSV file."""
